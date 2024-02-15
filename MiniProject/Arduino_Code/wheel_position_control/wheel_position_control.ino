@@ -10,56 +10,54 @@ hat. Connect encoder pins to the motor hat with jumpers: ENCA-> 2, ENCB-> 5, ENC
 Arduino with USB to recieve serial data about time, voltage, and motor speed. The data output is setup to be captured
 by ReadFromArduino.mlx. 
 */
+
 # include <Encoder.h>
 
 // pinout to connect motor driver and motor
-#define ENC1_A = 2;
-#define ENC2_A = 3;
-#define nD2 = 4;
-#define ENC1_B = 5;
-#define ENC2_B = 6;
-#define M1DIR = 7;
-#define M2DIR = 8;
-#define M1PWM = 9;
-#define M2PWM = 10;
+#define ENC1_A 2
+#define ENC2_A 3
+#define nD2 4
+#define ENC1_B 5
+#define ENC2_B 6
+#define M1DIR 7
+#define M2DIR 8
+#define M1PWM 9
+#define M2PWM 10
 
-unsigned long desired_Ts_ms = 10; // desired sample time in milliseconds
-unsigned long last_time_ms;
-unsigned long start_time_ms;
-double current_time;
-double actual_speed;
-double desired_speed = 4;   // speed for motor to rotate rad/s
+// constants
+const double pi = 3.141592;
+const double BatteryVoltage = 7.8;
 
-double error;
-double Voltage;
-double Kp = 4.5;           // Gain. Determined using simulink model.
+// Controller gains as determined by simulink model
+double Kp = 4.5;
 double Ki = 1; 
 
-unsigned int PWM;           // value 0-255 to set duty cycle. 0: low, 255: high
-
-double BatteryVoltage = 7.8; // expected voltage from battery
-double pi = 3.14;
-
-
-
+// Globals
+unsigned long last_time_ms;   // time for calculating time steps
+unsigned int PWM;             // value 0-255 to set duty cycle. 0: low, 255: high
 double target_pos_rad[2] = {0};
-
-//long M_Enc_Count[2] = {-999,999};
-
-Encoder encoders[2]; 
-
-int motor_PWM_pins[2] = {M1PWM, M2PWM}
-int motor_DIR_pins[2] = {M1DIR, M2DIR};
-
 double Voltage[2] = {0};
-
 double integral_error[2] = {0};
 
+// class for holding motor pins
+struct MotorPins {
+  int pwm;
+  int dir;
+};
+
+// motor variables
+Encoder encoders[2] = {Encoder(ENC1_A, ENC1_B), Encoder(ENC2_A, ENC2_B)};
+MotorPins motorPins[2];
+int motor_PWM_pins[2] = {M1PWM, M2PWM};
+int motor_DIR_pins[2] = {M1DIR, M2DIR};
+
 void setup() {
-  // setup encoder using Encoder.h library
-   
-  encoders[0] = Encoder(ENC1_A, ENC1_B);
-  encoders[1] = Encoder(ENC2_A, ENC2_B);
+  
+  // setup motors
+  motorPins[0].pwm = M1PWM;
+  motorPins[0].dir = M1DIR;
+  motorPins[1].pwm = M2PWM;
+  motorPins[1].dir = M2DIR;
 
   pinMode(nD2, OUTPUT);
   pinMode(M1DIR, OUTPUT);
@@ -69,11 +67,11 @@ void setup() {
 
   digitalWrite(nD2, HIGH);    // enable motor driver outputs
 
+  // setup serial
   Serial.begin(115200);
   Serial.println("Ready!");
 
   last_time_ms = millis(); // set up sample time variable
-  start_time_ms = last_time_ms;
 }
 
 //float prev_pos_ENC[2] = {0};   // holds previous encoder posotion
@@ -95,19 +93,19 @@ void loop() {
     integral_error[i] = integral_error[i] + pos_error[i]*((float)time_step_ms/1000);
 
     // calculate voltage
-    Voltage[i] = Kp*pos_error[i] + Ki*interal_error[i];
+    Voltage[i] = Kp*pos_error[i] + Ki*integral_error[i];
 
     // drive motors direction
     if (Voltage[i]>0) {
-      digitalWrite(motor_DIR_pins[i], HIGH);
+      digitalWrite(motorPins[i].dir, HIGH);
     } 
     else {
-      digitalWrite(motor_DIR_pins[i], LOW);
+      digitalWrite(motorPins[i].dir, LOW);
     }
 
     // drive motors speed
     PWM = 255*abs(Voltage[i])/BatteryVoltage;
-    analogWrite(motor_PWM_pins[i], min(PWM,255));
+    analogWrite(motorPins[i].pwm, min(PWM,255));
 
   }
 
@@ -117,3 +115,4 @@ void loop() {
 float counts_to_radians(long enc_counts) {
   return 2*pi*(float)enc_counts/3200;
 }
+
