@@ -16,17 +16,18 @@ by ReadFromArduino.mlx.
 // pinout to connect motor driver and motor
 #define ENC1_A 2
 #define ENC2_A 3
-#define nD2 4
+#define nD2    4
 #define ENC1_B 5
 #define ENC2_B 6
-#define M1DIR 7
-#define M2DIR 8
-#define M1PWM 9
-#define M2PWM 10
+#define M1DIR  7
+#define M2DIR  8
+#define M1PWM  9
+#define M2PWM  10
 
 // constants
 const double pi = 3.141592;
-const double BatteryVoltage = 7.8;
+const double MAX_VOLTAGE = 7.8;
+const int ENC_CNT_PER_REV = 3200;
 
 // Controller gains as determined by simulink model
 double Kp = 4.5;
@@ -36,7 +37,7 @@ double Ki = 1;
 unsigned long last_time_ms;   // time for calculating time steps
 unsigned int PWM;             // value 0-255 to set duty cycle. 0: low, 255: high
 double target_pos_rad[2] = {0};
-double Voltage[2] = {0};
+double out_voltage[2] = {0};
 double integral_error[2] = {0};
 
 // class for holding motor pins
@@ -47,17 +48,15 @@ struct MotorPins {
 
 // motor variables
 Encoder encoders[2] = {Encoder(ENC1_A, ENC1_B), Encoder(ENC2_A, ENC2_B)};
-MotorPins motorPins[2];
-int motor_PWM_pins[2] = {M1PWM, M2PWM};
-int motor_DIR_pins[2] = {M1DIR, M2DIR};
+MotorPins motor_pins[2];
 
 void setup() {
   
   // setup motors
-  motorPins[0].pwm = M1PWM;
-  motorPins[0].dir = M1DIR;
-  motorPins[1].pwm = M2PWM;
-  motorPins[1].dir = M2DIR;
+  motor_pins[0].pwm = M1PWM;
+  motor_pins[0].dir = M1DIR;
+  motor_pins[1].pwm = M2PWM;
+  motor_pins[1].dir = M2DIR;
 
   pinMode(nD2, OUTPUT);
   pinMode(M1DIR, OUTPUT);
@@ -77,42 +76,46 @@ void setup() {
 //float prev_pos_ENC[2] = {0};   // holds previous encoder posotion
 
 void loop() {
+
   // Variables for calculating position
   int i;
   unsigned int PWM;
- 
   double pos_error[2] = {0};
+
+  // calculate time step for computing integral error
   unsigned long time_step_ms = millis() - last_time_ms;
   last_time_ms = millis();
 
+  // loop through to control both motors
   for (i=0; i<2; i++) {
+
     // calculate position error
-    pos_error[i] = target_pos_rad[i] - counts_to_radians( encoders[i].read() );
+    pos_error[i] = target_pos_rad[i] - countsToRads( encoders[i].read() );
 
     // update integral error
-    integral_error[i] = integral_error[i] + pos_error[i]*((float)time_step_ms/1000);
+    integral_error[i] = integral_error[i] + pos_error[i] * ((float) time_step_ms / 1000);
 
     // calculate voltage
-    Voltage[i] = Kp*pos_error[i] + Ki*integral_error[i];
+    out_voltage[i] = Kp*pos_error[i] + Ki*integral_error[i];
 
     // drive motors direction
-    if (Voltage[i]>0) {
-      digitalWrite(motorPins[i].dir, HIGH);
+    if (out_voltage[i]>0) {
+      digitalWrite(motor_pins[i].dir, HIGH);
     } 
     else {
-      digitalWrite(motorPins[i].dir, LOW);
+      digitalWrite(motor_pins[i].dir, LOW);
     }
 
     // drive motors speed
-    PWM = 255*abs(Voltage[i])/BatteryVoltage;
-    analogWrite(motorPins[i].pwm, min(PWM,255));
+    PWM = 255*abs(out_voltage[i])/MAX_VOLTAGE;
+    analogWrite(motor_pins[i].pwm, min(PWM,255));
 
   }
 
 }
 
 
-float counts_to_radians(long enc_counts) {
-  return 2*pi*(float)enc_counts/3200;
+float countsToRads(long enc_counts) {
+  return 2*pi * (float) enc_counts/ ENC_CNT_PER_REV;
 }
 
