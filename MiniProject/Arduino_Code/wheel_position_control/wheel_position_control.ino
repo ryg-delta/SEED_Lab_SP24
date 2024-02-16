@@ -15,10 +15,10 @@ by ReadFromArduino.mlx.
 
 // pinout to connect motor driver and motor
 #define ENC1_A 2
-#define ENC2_A 6
+#define ENC2_A 3
 #define nD2    4
 #define ENC1_B 5
-#define ENC2_B 3
+#define ENC2_B 6
 #define M1DIR  7
 #define M2DIR  8
 #define M1PWM  9
@@ -30,13 +30,13 @@ const double MAX_VOLTAGE = 7.8;
 const int ENC_CNT_PER_REV = 3200;
 
 // Controller gains as determined by simulink model
-double Kp = 4.5;
-double Ki = 1; 
+double Kp = 12;
+double Ki = 5;
 
 // Globals
 unsigned long last_time_ms;   // time for calculating time steps
 unsigned int PWM;             // value 0-255 to set duty cycle. 0: low, 255: high
-double target_pos_rad[2] = {0};
+volatile double target_pos_rad[2] = {0};
 double out_voltage[2] = {0};
 double integral_error[2] = {0};
 
@@ -49,6 +49,29 @@ struct MotorPins {
 // motor variables
 Encoder encoders[2] = {Encoder(ENC1_A, ENC1_B), Encoder(ENC2_A, ENC2_B)};
 MotorPins motor_pins[2];
+
+
+////////////////////////// INTERUPT TESTING
+// #define TIMER_INTERRUPT_DEBUG         0
+// #define _TIMERINTERRUPT_LOGLEVEL_     0
+#define USE_TIMER_2 true
+#define INTERRUPT_INTERVAL_MS  5000
+#include "TimerInterrupt.h"
+
+void recieveTargetISR() {
+  // temporary code to toggle target
+  for (int i = 0; i < 2; i++) {
+    if (target_pos_rad[i] == 0) {
+      target_pos_rad[i] = pi;
+    }
+    else {
+      target_pos_rad[i] = 0;
+    }
+  }
+
+}
+//////////////////////////////
+
 
 void setup() {
   
@@ -68,13 +91,20 @@ void setup() {
 
   // setup serial
   Serial.begin(9600);
-  Serial.println("Ready!");
+  while(!Serial);
+
+  // set up isr to recieve target
+  ITimer2.init();
+  if (!ITimer2.attachInterruptInterval(INTERRUPT_INTERVAL_MS, recieveTargetISR)){
+    Serial.println("Couldn't set up interrupt. Quitting.");
+    while (1);
+  }
 
   last_time_ms = millis(); // set up sample time variable
 }
 
-// debug
-unsigned int time_since_print_ms = 0;
+double target_last = 0;
+unsigned long time_lp_ms = 0;
 
 void loop() {
 
@@ -113,12 +143,17 @@ void loop() {
 
   }
 
-  time_since_print_ms += time_step_ms;
-  if (time_since_print_ms >= 500) {
-    Serial.println("Pos error: " + (String) pos_error[0]);
-    Serial.println("int error: " + (String) integral_error[0]);
+  if (target_pos_rad[0] != target_last) {
+    Serial.println("target: " + (String) target_pos_rad[0]);
+    target_last = target_pos_rad[0];
+  }
+
+  time_lp_ms += time_step_ms;
+  if (time_lp_ms >= 500) {
+    Serial.println("Error 0: " + (String) pos_error[0]);
+    Serial.println("Error 1: " + (String) pos_error[1]);
     Serial.println();
-    time_since_print_ms = 0;
+    time_lp_ms = 0;
   }
 
 }
