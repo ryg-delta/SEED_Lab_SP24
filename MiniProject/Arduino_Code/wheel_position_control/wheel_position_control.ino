@@ -15,10 +15,10 @@ by ReadFromArduino.mlx.
 
 // pinout to connect motor driver and motor
 #define ENC1_A 2
-#define ENC2_A 3
+#define ENC2_A 6
 #define nD2    4
 #define ENC1_B 5
-#define ENC2_B 6
+#define ENC2_B 3
 #define M1DIR  7
 #define M2DIR  8
 #define M1PWM  9
