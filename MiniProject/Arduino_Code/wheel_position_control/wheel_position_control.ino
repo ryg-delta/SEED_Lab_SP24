@@ -36,7 +36,7 @@ double Ki = 1;
 // Globals
 unsigned long last_time_ms;   // time for calculating time steps
 unsigned int PWM;             // value 0-255 to set duty cycle. 0: low, 255: high
-double target_pos_rad[2] = {0};
+volatile double target_pos_rad[2] = {0};
 double out_voltage[2] = {0};
 double integral_error[2] = {0};
 
@@ -49,6 +49,28 @@ struct MotorPins {
 // motor variables
 Encoder encoders[2] = {Encoder(ENC1_A, ENC1_B), Encoder(ENC2_A, ENC2_B)};
 MotorPins motor_pins[2];
+
+
+////////////////////////// INTERUPT TESTING
+// #define TIMER_INTERRUPT_DEBUG         0
+// #define _TIMERINTERRUPT_LOGLEVEL_     0
+#define USE_TIMER_2 true
+#define INTERRUPT_INTERVAL_MS  5000
+#include "TimerInterrupt.h"
+
+void recieveTargetISR() {
+  // temporary code to toggle target
+  for (int i = 0; i < 2; i++) {
+    if (target_pos_rad[i] == 0) {
+      target_pos_rad[i] = pi;
+    }
+    else {
+      target_pos_rad[i] = 0;
+    }
+  }
+}
+//////////////////////////////
+
 
 void setup() {
   
@@ -68,12 +90,18 @@ void setup() {
 
   // setup serial
   Serial.begin(115200);
-  Serial.println("Ready!");
+  while(!Serial);
+
+  // set up isr to recieve target
+  ITimer2.init();
+  if (!ITimer2.attachInterruptInterval(INTERRUPT_INTERVAL_MS, recieveTargetISR)){
+    Serial.println("Couldn't set up interrupt. Quitting.");
+    while (1);
+  }
 
   last_time_ms = millis(); // set up sample time variable
 }
 
-//float prev_pos_ENC[2] = {0};   // holds previous encoder posotion
 
 void loop() {
 
