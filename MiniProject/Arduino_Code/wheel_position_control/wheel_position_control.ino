@@ -15,10 +15,10 @@ by ReadFromArduino.mlx.
 
 // pinout to connect motor driver and motor
 #define ENC1_A 2
-#define ENC2_A 6
+#define ENC2_A 3
 #define nD2    4
 #define ENC1_B 5
-#define ENC2_B 3
+#define ENC2_B 6
 #define M1DIR  7
 #define M2DIR  8
 #define M1PWM  9
@@ -30,8 +30,8 @@ const double MAX_VOLTAGE = 7.8;
 const int ENC_CNT_PER_REV = 3200;
 
 // Controller gains as determined by simulink model
-double Kp = 4.5;
-double Ki = 1; 
+double Kp = 12;
+double Ki = 5;
 
 // Globals
 unsigned long last_time_ms;   // time for calculating time steps
@@ -68,6 +68,7 @@ void recieveTargetISR() {
       target_pos_rad[i] = 0;
     }
   }
+
 }
 //////////////////////////////
 
@@ -89,7 +90,7 @@ void setup() {
   digitalWrite(nD2, HIGH);    // enable motor driver outputs
 
   // setup serial
-  Serial.begin(115200);
+  Serial.begin(9600);
   while(!Serial);
 
   // set up isr to recieve target
@@ -102,6 +103,8 @@ void setup() {
   last_time_ms = millis(); // set up sample time variable
 }
 
+double target_last = 0;
+unsigned long time_lp_ms = 0;
 
 void loop() {
 
@@ -138,6 +141,19 @@ void loop() {
     PWM = 255*abs(out_voltage[i])/MAX_VOLTAGE;
     analogWrite(motor_pins[i].pwm, min(PWM,255));
 
+  }
+
+  if (target_pos_rad[0] != target_last) {
+    Serial.println("target: " + (String) target_pos_rad[0]);
+    target_last = target_pos_rad[0];
+  }
+
+  time_lp_ms += time_step_ms;
+  if (time_lp_ms >= 500) {
+    Serial.println("Error 0: " + (String) pos_error[0]);
+    Serial.println("Error 1: " + (String) pos_error[1]);
+    Serial.println();
+    time_lp_ms = 0;
   }
 
 }
