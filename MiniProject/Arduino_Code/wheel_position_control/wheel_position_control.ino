@@ -15,10 +15,10 @@ by ReadFromArduino.mlx.
 
 // pinout to connect motor driver and motor
 #define ENC1_A 2
-#define ENC2_A 3
+#define ENC2_A 6
 #define nD2    4
 #define ENC1_B 5
-#define ENC2_B 6
+#define ENC2_B 3
 #define M1DIR  7
 #define M2DIR  8
 #define M1PWM  9
@@ -67,13 +67,14 @@ void setup() {
   digitalWrite(nD2, HIGH);    // enable motor driver outputs
 
   // setup serial
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Ready!");
 
   last_time_ms = millis(); // set up sample time variable
 }
 
-//float prev_pos_ENC[2] = {0};   // holds previous encoder posotion
+// debug
+unsigned int time_since_print_ms = 0;
 
 void loop() {
 
@@ -110,6 +111,14 @@ void loop() {
     PWM = 255*abs(out_voltage[i])/MAX_VOLTAGE;
     analogWrite(motor_pins[i].pwm, min(PWM,255));
 
+  }
+
+  time_since_print_ms += time_step_ms;
+  if (time_since_print_ms >= 500) {
+    Serial.println("Pos error: " + (String) pos_error[0]);
+    Serial.println("int error: " + (String) integral_error[0]);
+    Serial.println();
+    time_since_print_ms = 0;
   }
 
 }
