@@ -23,7 +23,7 @@
 - We have two categories of suplemental files:
 - - Assignment two files used as a reference: "assigment_2_demo2a_python.py" and "assignment_2_readme.txt", 
 they contain alot of the functions used in this project
--- Function prototypes/individual work [everything else] this is due to the fact that we split up the labor
+- - Function prototypes/individual work [everything else] this is due to the fact that we split up the labor
 and then combined our functions into one main file
 ## Main File
 - Our main file uses functions to accomplish the goals required by the project
