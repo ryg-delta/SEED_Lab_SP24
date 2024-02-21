@@ -1,14 +1,28 @@
 /*
-Intro:
-motor_velocity_control turns a motor on and uses a basic control system to reach a set speed 
-in rad/s between 1s and 3s of the program running.
-
-Connect battery to voltage monitor through a fuse and switch. Place the Pololu Dual MC33926 Motor Driver Shield
-onto the Arduino. Connect the power inputs of the motor driver to the outputs of the voltage monitor. Make sure 
-the jumper on the motor driver is disconnected. Connect the motor power pins to the M1PWR outputs on the motor
-hat. Connect encoder pins to the motor hat with jumpers: ENCA-> 2, ENCB-> 5, ENCPWR->5V, ENCGND->GND. Power the
-Arduino with USB to recieve serial data about time, voltage, and motor speed. The data output is setup to be captured
-by ReadFromArduino.mlx. 
+  Purpose: Use a PI controller to control wheel postions based on instructions from RPi via i2c. 
+  Authors: Ben Sprik and Blake Billharz
+  Sources: N/A
+  Set up: 
+    Connect the motor driver shield to the arduino and connect power from the battery via the voltage regulator.
+    
+    Left motor:
+      encoderPwr -> 3v3
+      encoderGnd -> GND
+      encoderA -> 2
+      encoderB -> 5
+      direction -> 7
+      pwm -> 9
+    Right motor:
+      encoderPwr -> 3v3
+      encoderGnd -> GND
+      encoderA -> 3
+      encoderB -> 6
+      direction -> 8
+      pwm -> 10
+    I2C:
+      SCL -> A5
+      SDA -> A4
+      GND -> GND
 */
 
 #include <Encoder.h>
@@ -142,6 +156,7 @@ void loop() {
 }
 
 
+// function to convert cnts to rads
 float countsToRads(long enc_counts) {
   return 2*pi * (float) enc_counts/ ENC_CNT_PER_REV;
 }
