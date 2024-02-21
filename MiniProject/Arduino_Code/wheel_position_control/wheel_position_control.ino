@@ -116,6 +116,14 @@ void loop() {
     // calculate voltage
     out_voltage[i] = Kp*pos_error[i] + Ki*integral_error[i];
 
+    // Anti windup- account for satuaration
+    if (abs(out_voltage[i]) > MAX_VOLTAGE) {
+      int sign = (out_voltage[i] > 0) - (out_voltage[i] < 0);    // deterime + or - sign
+      out_voltage[i] = sign * MAX_VOLTAGE;
+      pos_error[i] = sign * min(MAX_VOLTAGE / Kp, abs(pos_error[i]));
+      integral_error[i] = (out_voltage[i] - Kp * pos_error[i]) / Ki;
+    }
+
     // drive motors direction
     if (out_voltage[i]>0) {
       digitalWrite(motor_pins[i].dir, HIGH);
