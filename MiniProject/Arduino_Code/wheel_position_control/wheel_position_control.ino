@@ -57,6 +57,8 @@ MotorPins motor_pins[2];
 
 // ISR for recieving target over i2c
 void recieveTargetISR() {
+  Wire.read(); // read offset
+
   // parse recieved byte, bit 0 = right wheel, bit 1 = left wheel
   uint8_t receiveByte = Wire.read();
   target_pos_rad[0] = ((receiveByte >> 1) & 0b1) * pi;
@@ -79,10 +81,6 @@ void setup() {
   pinMode(M2PWM, OUTPUT);
 
   digitalWrite(nD2, HIGH);    // enable motor driver outputs
-
-  // setup serial
-  Serial.begin(9600);
-  while(!Serial);
 
   // set up isr to recieve target
   Wire.begin(I2CADDR);
