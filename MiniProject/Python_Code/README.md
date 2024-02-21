@@ -21,8 +21,8 @@
 # Description of Python Code
 ## Suplementary Files
 - We have two categories of suplemental files:
--- Assignment two files used as a reference: "assigment_2_demo2a_python.py" and "assignment_2_readme.txt", 
-they contail alot of the functions used in this project
+- - Assignment two files used as a reference: "assigment_2_demo2a_python.py" and "assignment_2_readme.txt", 
+they contain alot of the functions used in this project
 -- Function prototypes/individual work [everything else] this is due to the fact that we split up the labor
 and then combined our functions into one main file
 ## Main File
