@@ -5,6 +5,7 @@
 # LCD screen should be connected
 # Description:
 # References: Computer Vision and Communication Tutorial
+# To do: Combine with quadrant detection and improve stabilization
 
 #use cpp coding styles, camelcase for vars, caps for constants
 
@@ -17,25 +18,33 @@ import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import queue
 import threading
 
-q = queue.Queue()
+CAMERA_HEIGHT = 480
+CAMERA_WIDTH = 640
+
+lcdMsg = "No marker found."
+detectedMarkers = False
 
 def initializeCamera():
-    return cv.VideoCapture(0)
+    camera = cv.VideoCapture(0)
+    camera.set(cv.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    camera.set(cv.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+    return camera
 
 # Takes a photo, with delay to stabilize image
 def takePhoto(camera):
-    sleep(0.5)
+    sleep(0.1)
     ret, image = camera.read()
     if not ret:
         print("Could not capture image from camera!")
         quit()
     else:
-        conv_img = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        return conv_img
+        convImg = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        return convImg
 
 
 # Runs ArUco detection, sets flag if markers were detected
 def arucoDetect(img):
+    global lcdMsg
     aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     parameters = cv.aruco.DetectorParameters()
 
@@ -43,36 +52,35 @@ def arucoDetect(img):
     corners, ids, rejected = detector.detectMarkers(img)
 
     if ids is not None:
-        detected_marker = True
-        q.put(ids)
+        detectedMarkers = True
+        lcdMsg = "Marker detected."
     else:
-        detected_marker = False
+        detectedMarkers = False
+        lcdMsg = "No markers\ndetected."
 
-    return detected_marker, ids, corners
+    return detectedMarkers, ids, corners
 
 
 # Prints to LCD a message based on the detected_marker flag.
-def printToLCD(detected_marker):
+def printToLCD():
+    global lcdMsg
+    global detectedMarkers
+    currentMsg = ""
     while True:
-        if not q.empty():
-            if detected_marker:
-                ids = q.get()
-                print("Detected marker IDs: ")
-                detected_ids = ', '.join(map(str, ids.flatten()[::-1]))
-                print(detected_ids)
-
+        if lcdMsg != currentMsg:
+            lcd.clear()
+            if detectedMarkers:
+                print("Marker detected.")
                 # ******************************
                 # Write new data to the LCD here
                 # ******************************
-                lcd.message = "Detected Marker:\n" + detected_ids
-
-                #sleep(0.5)
-                #lcd.clear()
+                lcd.message = "Marker detected."
+                currentMsg = "Marker detected."
             else:
                 print("No markers found.")
                 lcd.message = "No markers\ndetected."
-                #sleep(0.5)
-                #lcd.clear()
+                currentMsg = "No markers\ndetected."
+        sleep(0.1)        
     return
 
 
@@ -81,30 +89,29 @@ def printToLCD(detected_marker):
 if __name__ == "__main__":
     camera = initializeCamera()
 
-    lcd_columns = 16
-    lcd_rows = 2
+    lcdColumns = 16
+    lcdRows = 2
 
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
 
     # Initialise the LCD class
-    lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns, lcd_rows)
+    lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
     lcd.color = [0, 100, 100]
 
-    detected_markers = False
-
-    myThread = threading.Thread(target=printToLCD(detected_markers), args=())
+    
+    myThread = threading.Thread(target=printToLCD, args=())
     myThread.start()
 
     # Run loop to continuously take pictures
     while True:
-        conv_img = takePhoto(camera)
-        detected_markers, ids, corners = arucoDetect(conv_img)
+        convImg = takePhoto(camera)
+        detectedMarkers, ids, corners = arucoDetect(convImg)
 
-        cv.aruco.drawDetectedMarkers(conv_img, corners, ids, borderColor=4)
+        cv.aruco.drawDetectedMarkers(convImg, corners, ids, borderColor=4)
 
         # Show camera output for debug
-        cv.imshow("overlay", conv_img)
+        cv.imshow("overlay", convImg)
 
         # Exit works only if "overlay" window is selected
         if cv.waitKey(1) & 0xFF == ord('q'):
