@@ -12,6 +12,6 @@ and then combined our functions into one main file
 - Next, we enter a while loop, which takes in live video from the camera
 - Then we process the image (grayscale + dividing into quadrants)
 - We call a function to detect aruco markers
-- If an aruco marker is detected, we then detect the quadrant of the top-left corner
-- This is then sent to both the arduino & the lcd screen
-- It is exited when you click the window and press q
+- If an aruco marker is detected, we then detect the quadrant of the top-left corner and assign a corresponding integer
+- The integer is then sent to both the arduino & the LCD screen
+- Program exits when you click the window and press 'q'
