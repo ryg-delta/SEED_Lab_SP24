@@ -16,3 +16,8 @@ Metrics: The target position will update as soon as a message is recieved. The a
 - Goal: Use ArUco Detection to determine which quadrant the marker is in and send an integer to the Arduino to control motors.
 - New Functions developed: Threading with LCD / ArUco Quadrant Detection / Improved Camera Feed
 - Interfaces: Used I2C to send and integer to the Arduino which would then be interpreted as the respective binary number. I2C was also used to display text to the LCD, only updating when the quadrant changes.
+
+## Folders
+Arduino_Code: Contains code for the arduino and control system
+Python_Code: Contains computer vision code and I2C code for Raspberry Pi.
+Matlab_Code: Contains simulink models used to design the position control system.
