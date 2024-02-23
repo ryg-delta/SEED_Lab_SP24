@@ -18,12 +18,13 @@ Github Repository for Team 17's SEED Lab Projects
   - `import cv2 as cv`
   - `import numpy as np`
 - Use: Main and Function structure for easy debug
-- Use: `# Name of file`
-       `# Author name(s)`
-       `# SEED Lab Spring 2024`
-       `# How to Run:`
-       `# Description:`
-       `# References:`
+- Use:
+  - `# Name of file`
+  - `# Author name(s)`
+  - `# SEED Lab Spring 2024`
+  - `# How to Run:`
+  - `# Description:`
+  - `# References:`
   # RPI and Arduino Interfacing
 - SCL: A5 to Pin 5
 - SDA: A4 to Pin 3
