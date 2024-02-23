@@ -1,17 +1,4 @@
-# Coding Style Quick Ref
-## Use C style conventions 
-- Constants: `CONSTANT`
-- Variables: `snake_case`
-- Functions: `camelCase`
-- Import names:
-  - `# include <Encoder.h>`
-  - `import numpy as np`
-- Use: Main and Function structure for easy debug
-- Use: `Purpose:`
-       `Author name(s):`
-       `Sources`
-       `Set up:`
-       
+      
 # Arduino to RPI Interfacing
 - SCL: A5 to Pin 5
 - SDA: A4 to Pin 3
