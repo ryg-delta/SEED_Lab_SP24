@@ -16,10 +16,6 @@ import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import threading
 from smbus2 import SMBus
 
-# I2C address of the Arduino, set in Arduino sketch
-ARD_ADDR = 8
-# Initialize SMBus library with I2C bus 1
-i2c = SMBus(1)
 
 """    command = [ord(i) for i in input_string]
     i2c.write_i2c_block_data(ARD_ADDR, offset, command)"""
@@ -30,7 +26,7 @@ WIDTH = 640
 halfWidth = WIDTH // 2
 halfHeight = HEIGHT // 2
 
-lcdMsg = "No marker found."
+lcdMsg = "No markers\ndetected."
 detectedMarkers = False
 
 
@@ -64,7 +60,6 @@ def arucoDetect(img):
 
     if ids is not None:
         detectedMarkers = True
-        lcdMsg = "Marker detected."
     else:
         detectedMarkers = False
         lcdMsg = "No markers\ndetected."
@@ -81,14 +76,14 @@ def printToLCD():
         if lcdMsg != currentMsg:
             lcd.clear()
             if detectedMarkers:
-                print("Marker detected.")
+                #print("Marker detected.")
                 # ******************************
                 # Write new data to the LCD here
                 # ******************************
-                lcd.message = "Marker detected."
-                currentMsg = "Marker detected."
+                lcd.message = lcdMsg
+                currentMsg = lcdMsg
             else:
-                print("No markers found.")
+                #print("No markers found.")
                 lcd.message = "No markers\ndetected."
                 currentMsg = "No markers\ndetected."
         sleep(0.1)
@@ -102,25 +97,45 @@ def detectQuad(corners):
     # Each quadrant is labeled 0-4, [00, 01][10,11] (in binary)
     pos = 0
     # adds the appropriate amount based on position
-    if xCoor >= halfWidth:
+    if xCoor <= halfWidth:
         pos += 1
     if yCoor >= halfHeight:
         pos += 2
     # Returns the final quadrant
     return (pos)
 
+def posToString(pos):
+    if pos == 0:
+        lcdMsg = "Goal position:\n[0 0]"
+    elif pos == 1:
+        lcdMsg = "Goal position:\n[0 1]"
+    elif pos == 2:
+        lcdMsg = "Goal position:\n[1 0]"
+    elif pos == 3:
+        lcdMsg = "Goal position:\n[1 1]"
+    else:
+        lcdMsg = "No marker\ndetected."
+    return lcdMsg
 
-# Capture Video
 
 
 if __name__ == "__main__":
     lcdColumns = 16
     lcdRows = 2
+    # I2C address of the Arduino, set in Arduino sketch
+    ARD_ADDR = 8
+    # Initialize SMBus library with I2C bus 1
+    
+    offset = 1
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
+    
+    sleep(1)
     # Initialise the LCD class
     lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
     lcd.color = [0, 100, 100]
+
+    i2c = SMBus(1)
 
     myThread = threading.Thread(target=printToLCD, args=())
     myThread.start()
@@ -159,32 +174,21 @@ if __name__ == "__main__":
             # If aruco detected, find the corners
             if detectedMarkers == True:
                 pos = detectQuad(corners)
+                #print(pos)
                 # If the positon has changed, print
                 if oldpos != pos:
                     oldpos = pos
-                    print(pos)
+                    lcdMsg = posToString(pos)
+                    #print(lcdMsg)
+                    i2c.write_byte_data(ARD_ADDR, offset, pos)
+                    sleep(0.1)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
         # wait for 1ms
         cv.waitKey(1)
 
     # It's over now
-    print("Done NOw!")
+    print("Done Now!")
     vidCap.release()
     cv.destroyAllWindows()
 
-    """
-    while True:
-        convImg = takePhoto(camera)
-        detectedMarkers, ids, corners = arucoDetect(convImg)
-
-        cv.aruco.drawDetectedMarkers(convImg, corners, ids, borderColor=4)
-
-        # Show camera output for debug
-        cv.imshow("overlay", convImg)
-
-        # Exit works only if "overlay" window is selected
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    camera.release()
-    cv.destroyAllWindows()
-    """
