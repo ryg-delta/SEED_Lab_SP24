@@ -3,8 +3,8 @@
 # SEED Lab Spring 2024
 # How to Run: Execute using the python terminal.
 # Make sure camera and LCD screen are connected
-# Description:
-#
+# Description: Uses ArUco markers to detect the corner of the markers. Then, the quadrant in which the corner is
+# identified, and send both a message to the LCD screen, and an integer to the arduino via I2C
 # References: Computer Vision and Communication Tutorial
 
 import cv2 as cv
@@ -16,10 +16,7 @@ import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import threading
 from smbus2 import SMBus
 
-
-"""    command = [ord(i) for i in input_string]
-    i2c.write_i2c_block_data(ARD_ADDR, offset, command)"""
-
+# Constants
 HEIGHT = 480
 WIDTH = 640
 
@@ -104,6 +101,7 @@ def detectQuad(corners):
     # Returns the final quadrant
     return (pos)
 
+# Helper function to print the correct message to the LCD
 def posToString(pos):
     if pos == 0:
         lcdMsg = "Goal position:\n[0 0]"
@@ -125,16 +123,16 @@ if __name__ == "__main__":
     # I2C address of the Arduino, set in Arduino sketch
     ARD_ADDR = 8
     # Initialize SMBus library with I2C bus 1
-    
     offset = 1
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
-    
     sleep(1)
+    
     # Initialise the LCD class
     lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
     lcd.color = [0, 100, 100]
 
+    # i2c for arduino
     i2c = SMBus(1)
 
     myThread = threading.Thread(target=printToLCD, args=())
