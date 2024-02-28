@@ -1,5 +1,10 @@
 # NOTE: can only be run in linux terminal or git bash
 
+# make a bin folder if one doesn't already exist
+if ! [ -d bin ]; then
+    mkdir bin
+fi
+
 echo "Compiling tests"
 echo
 
