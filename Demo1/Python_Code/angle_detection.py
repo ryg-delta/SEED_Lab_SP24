@@ -1,11 +1,15 @@
-# Mini Project
+# Demo 1
 # Polina Rygina and Silje Ostrem
 # SEED Lab Spring 2024
 # How to Run: Execute using the python terminal.
 # Make sure camera and LCD screen are connected
-# Description: Uses ArUco markers to detect the corner of the markers. Then, the quadrant in which the corner is
-# identified, and send both a message to the LCD screen, and an integer to the arduino via I2C
-# References: Computer Vision and Communication Tutorial
+# Description:
+#
+# References:
+# To do:
+# Similar Triangles Distance Formula
+# ArUco marker dimensions (Potentially transformation)
+# Difference of height = angle?
 
 import cv2 as cv
 from cv2 import aruco
@@ -14,18 +18,21 @@ from time import sleep
 import board
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import threading
-from smbus2 import SMBus
 
 # Constants
 HEIGHT = 480
 WIDTH = 640
 
-halfWidth = WIDTH // 2
-halfHeight = HEIGHT // 2
+X_ORIGIN = WIDTH // 2
+Y_ORIGIN = HEIGHT // 2
+
+FOCAL_LENGTH = 120 #mm
+
+KNOWN_MARKER_WIDTH = 50 #mm
+KNOWN_MARKER_LENGTH = 50 #mm
 
 lcdMsg = "No markers\ndetected."
 detectedMarkers = False
-
 
 def initializeCamera():
     camera = cv.VideoCapture(0)
@@ -63,7 +70,6 @@ def arucoDetect(img):
 
     return detectedMarkers, ids, corners
 
-
 # Prints to LCD a message based on the detected_marker flag.
 def printToLCD():
     global lcdMsg
@@ -73,67 +79,35 @@ def printToLCD():
         if lcdMsg != currentMsg:
             lcd.clear()
             if detectedMarkers:
-                #print("Marker detected.")
+                # print("Marker detected.")
                 # ******************************
                 # Write new data to the LCD here
                 # ******************************
                 lcd.message = lcdMsg
                 currentMsg = lcdMsg
             else:
-                #print("No markers found.")
+                # print("No markers found.")
                 lcd.message = "No markers\ndetected."
                 currentMsg = "No markers\ndetected."
         sleep(0.1)
     return
 
-
-def detectQuad(corners):
-    # Gets coordinates from the aruco detector
-    xCoor = corners[0][0][0][0]
-    yCoor = corners[0][0][0][1]
-    # Each quadrant is labeled 0-4, [00, 01][10,11] (in binary)
-    pos = 0
-    # adds the appropriate amount based on position
-    if xCoor <= halfWidth:
-        pos += 1
-    if yCoor >= halfHeight:
-        pos += 2
-    # Returns the final quadrant
-    return (pos)
-
-# Helper function to print the correct message to the LCD
-def posToString(pos):
-    if pos == 0:
-        lcdMsg = "Goal position:\n[0 0]"
-    elif pos == 1:
-        lcdMsg = "Goal position:\n[0 1]"
-    elif pos == 2:
-        lcdMsg = "Goal position:\n[1 0]"
-    elif pos == 3:
-        lcdMsg = "Goal position:\n[1 1]"
-    else:
-        lcdMsg = "No marker\ndetected."
-    return lcdMsg
-
-
+def angle_detect():
+    #use similar triangles
+    return angle
 
 if __name__ == "__main__":
     lcdColumns = 16
     lcdRows = 2
-    # I2C address of the Arduino, set in Arduino sketch
-    ARD_ADDR = 8
-    # Initialize SMBus library with I2C bus 1
-    offset = 1
+    
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
     sleep(1)
-    
+
     # Initialise the LCD class
     lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
     lcd.color = [0, 100, 100]
 
-    # i2c for arduino
-    i2c = SMBus(1)
 
     myThread = threading.Thread(target=printToLCD, args=())
     myThread.start()
@@ -150,10 +124,6 @@ if __name__ == "__main__":
     cv.destroyAllWindows()
     cv.imshow("Live Video", frame)
 
-    # Initializations of the positons
-    pos = 5
-    oldpos = 5
-
     # While loop for LIVE video
     while vidCap.isOpened():
         # Read in camera data
@@ -163,22 +133,14 @@ if __name__ == "__main__":
         # If the image is good
         if ret:
             # Add lines to the image & Make it grayescale
-            cv.line(grayscale, (0, halfHeight), (WIDTH, halfHeight), (0, 255, 0), thickness=5)
-            cv.line(grayscale, (halfWidth, 0), (halfWidth, HEIGHT), color=(0, 255, 0), thickness=5)
+            cv.line(grayscale, (0, Y_ORIGIN), (WIDTH, Y_ORIGIN), (0, 255, 0), thickness=5)
+            cv.line(grayscale, (X_ORIGIN, 0), (X_ORIGIN, HEIGHT), color=(0, 255, 0), thickness=5)
             # Call aruco detector
             detectedMarkers, ids, corners = arucoDetect(frame)
             # Show the gram
             cv.imshow("Live Video", grayscale)
             # If aruco detected, find the corners
             if detectedMarkers == True:
-                pos = detectQuad(corners)
-                #print(pos)
-                # If the positon has changed, print
-                if oldpos != pos:
-                    oldpos = pos
-                    lcdMsg = posToString(pos)
-                    #print(lcdMsg)
-                    i2c.write_byte_data(ARD_ADDR, offset, pos)
                     sleep(0.1)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
@@ -189,4 +151,3 @@ if __name__ == "__main__":
     print("Done Now!")
     vidCap.release()
     cv.destroyAllWindows()
-
