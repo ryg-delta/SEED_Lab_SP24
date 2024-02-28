@@ -423,14 +423,14 @@ void TestCase::run(bool quiet_mode) {
         test_func();
 
         if (not quiet_mode) {
-            std::cout << "PASS" << std::endl;
+            std::cout << "\033[1;32mPASS\033[0m" << std::endl;
         }
     }
     catch (TestFailure& failure) {
         failure_msg = failure.to_string();
 
         if (not quiet_mode) {
-            std::cout << "FAIL" << std::endl;
+            std::cout << "\033[1;31mFAIL\033[0m" << std::endl;
         }
     }
     catch (std::exception& e) {
@@ -455,7 +455,7 @@ void TestCase::print(bool quiet_mode) {
     }
 
     if (not failure_msg.empty()) {
-        std::cout << "FAIL" << std::endl;
+        std::cout << "\033[1;31mFAIL\033[0m" << std::endl;
         if (not quiet_mode) {
             std::cout << failure_msg << std::endl;
         }
@@ -467,7 +467,7 @@ void TestCase::print(bool quiet_mode) {
         }
     }
     else {
-        std::cout << "PASS" << std::endl;
+        std::cout << "\033[1;32mPASS\033[0m" << std::endl;
     }
 }
 
