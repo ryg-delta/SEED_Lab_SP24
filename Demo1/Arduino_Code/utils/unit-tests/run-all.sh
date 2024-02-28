@@ -1,3 +1,5 @@
+# NOTE: can only be run in linux terminal or Git Bash
+
 # compile all tests
 
 echo "Compiling tests"

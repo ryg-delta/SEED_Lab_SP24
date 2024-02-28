@@ -10,7 +10,12 @@ We are using a lightweight testing framework that is compatible with our project
 For a simple example look at `Vbase.cpp`
 
 ## Running Tests
-You can either compile and run tests individually, or you can run `sh run.sh` to compile and run all tests.
+You can either run tests individually with `sh run-test.sh <test1> <test2> ...`, or you can run `sh run-all.sh` to compile and run all tests.
 
 ## Naming Convention
 All tests are named the same as the unit they are testing.
+
+## Dependencies
+The sh scripts require
+- git bash or a linux terminal
+- g++ compiler
