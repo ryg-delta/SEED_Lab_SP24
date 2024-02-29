@@ -52,7 +52,7 @@ class Tracker {
 
 
     /**
-     * @brief Update the data using the encoders. This method should be called at least every 10ms, faster than that for more accuracy.
+     * @brief Update the data using the encoders. This method should be called once every loop, or at least once every 10ms.
      * 
      */
     void update() {
@@ -60,10 +60,72 @@ class Tracker {
 
         // update rho and phi
 
-        // update x and y
-
         // update speeds if enough time has passed
     }
+
+
+    // getters
+
+    long getRightEncCnt() {
+        return rightEncCnt;
+    }
+
+    long getLeftEncCnt() {
+        return leftEncCnt;
+    }
+
+    double getRightPosRad() {
+        return rightPosRad;
+    }
+
+    double getLeftPosRad() {
+        return leftPosRad;
+    }
+
+    double getRhoPosM() {
+        return rhoPosM;
+    }
+
+    double getPhiPosRad() {
+        return phiPosRad;
+    }
+
+    double getXPosM() {
+        //TODO
+        return 0;
+    }
+
+    double getYPosM() {
+        //TODO
+        return 0;
+    }
+
+    double getRightSpeedRpS() {
+        return rightSpeedRpS;
+    }
+
+    double getLeftSpeedRpS() {
+        return leftSpeedRpS;
+    }
+
+    double getRhoSpeedMpS() {
+        return rhoSpeedMpS;
+    }
+
+    double getPhiSpeedMpS() {
+        return phiSpeedRpS;
+    }
+
+    double getXSpeedMpS() {
+        //TODO
+        return 0;
+    }
+
+    double getYSpeedMpS() {
+        //TODO
+        return 0;
+    }
+
 
     private:
 
@@ -79,6 +141,7 @@ class Tracker {
     double leftPosRadLastRead;
     double rhoPosM;
     double phiPosRad;
+
 
     // speed variables
     double rightSpeedRpS;
