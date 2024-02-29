@@ -3,7 +3,7 @@
  * @author Blake Billharz
  * @brief Vbase is a class to use for calculating left and right wheel voltages from forward and rotational symbolic voltages.
  * @example
- * OOP Use:
+ * OOP Use (recommended):
  *      Vbase voltages = Vbase(Vfor, Vrot);
  *      analogWrite(rightWheelPin, voltages.getVright());
  *      analogWrite(leftWheelPin, voltages.getVleft());

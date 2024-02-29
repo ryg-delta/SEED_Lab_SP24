@@ -10,3 +10,7 @@ For more documentation about each file. See the file header block.
 - Vbase.h
   - Type: Class
   - Use: Calculating left and right wheel voltages from forward and rotational symbolic voltages.
+
+- Tracker.h
+  - Type: Class
+  - Use: Given pointers to both encoders, keeps track of all position and velocity information. You must use update() every loop.

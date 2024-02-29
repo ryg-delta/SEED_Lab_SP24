@@ -1,5 +1,5 @@
 /*
-  Purpose: Use a PI controller to control wheel postions based on instructions from RPi via i2c. 
+  Purpose: Run an experiment to determine the transfer function for the rotational velocity of the system. 
   Authors: Ben Sprik and Blake Billharz
   Sources: N/A
   Set up: 
@@ -25,6 +25,8 @@
       GND -> GND
 */
 
+#include <Arduino.h>
+#include <Serial.h>
 #include <Encoder.h>
 
 
@@ -56,6 +58,7 @@ volatile double target_pos_rad[2] = {0};
 double out_voltage[2] = {0};
 double rotational_velocity[2] = {0};
 double prev_pos_rad[2] = {0,0};
+double new_pos_rad[2] = {0,0};
 
 
 // class for holding motor pins
@@ -70,8 +73,8 @@ MotorPins motor_pins[2];
 
 
 
-double Va1 = 0.5;
-double Va2 = -0.5;
+double Va1 = 3.5;
+double Va2 = -3.5;
 double deltaVa = 0;
 double rotation_velocity_RadpS = 0;
 
@@ -131,11 +134,11 @@ void loop() {
       analogWrite(motor_pins[i].pwm, min(PWM,255));
 
 
-      prev_pos_rad[i] = countsToRads(encoders[i].read());
+      new_pos_rad[i] = countsToRads(encoders[i].read());
 
-      w_motor_RadpS[i] = (prev_pos_rad[i] - prev_pos_rad[i]) / ((float)desired_Ts_ms/1000);
+      w_motor_RadpS[i] = (new_pos_rad[i] - prev_pos_rad[i]) / ((float)desired_Ts_ms/1000);
 
-      prev_pos_rad[i] = prev_pos_rad[i];
+      prev_pos_rad[i] = new_pos_rad[i];
 
     } 
 
