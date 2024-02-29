@@ -11,6 +11,6 @@
 #define ROBOTCONSTANTS_H
 
 #define WHEEL_RADIUS_M  0.074 
-#define WHEEL_BASE_M    0.27 //FIXME
+#define WHEEL_BASE_M    0.27 
 
 #endif
