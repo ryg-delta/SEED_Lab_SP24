@@ -12,5 +12,8 @@
 
 #define WHEEL_RADIUS_M  0.074 
 #define WHEEL_BASE_M    0.27 
+#define ENC_CNT_PER_REV  3200
+
+#define pi 3.141592
 
 #endif

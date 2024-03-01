@@ -14,3 +14,16 @@ For more documentation about each file. See the file header block.
 - Tracker.h
   - Type: Class
   - Use: Given pointers to both encoders, keeps track of all position and velocity information. You must use update() every loop.
+  - Metrics: Each of these metrics are tracked and can be accessed via a getter, e.g. phiPosRad can be accessed via getPhiPosRad().
+    - phiSpeedRpS
+    - RhoSpeedMpS
+    - leftSpeedRpS
+    - rightSpeedRpS
+    - phiPosRad
+    - yPosM
+    - xPosM
+    - leftPosRad
+    - rightPosRad
+    - leftEncCnt
+    - RightEncCnt
+
