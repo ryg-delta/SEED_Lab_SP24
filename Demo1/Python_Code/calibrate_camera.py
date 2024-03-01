@@ -1,14 +1,24 @@
+# calibrate_camera
+# Polina Rygina
+# SEED Lab Spring 2024
+# How to Run: It needs ten images in the same directory as the script to run properly. This assumes you are using
+# the proper charuco board. See generatearuco.py for more on charuco boards
+# IMPORTANT! Script will not run unless opencv-contrib-python is installed. Normal OpenCV library doesnt have this :L
+# Description: Runs charuco camera calibration to get camera matrix and distance coefficients
+# References:
+# https://github.com/PhotonVision/photonvision/blob/7f09f9e4f5b4237ef4b9dde7fdcb747115315659/photon-server/src/main/resources/calibration/lifecam480p.json#L10
+ #https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html
+
 import cv2 as cv
 import numpy as np
-from time import sleep
-#OpenCV Contrib Vers!
+
+
 aruco_dict = cv.aruco.DICT_6X6_50
 ROWS = 7
 COLS = 5
 SQUARE_LENGTH = 0.03
 MARKER_LENGTH = 0.015
-#other calibrated cam values: https://github.com/PhotonVision/photonvision/blob/7f09f9e4f5b4237ef4b9dde7fdcb747115315659/photon-server/src/main/resources/calibration/lifecam480p.json#L10
-#https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html
+
 def calibrate():
     dictionary = cv.aruco.getPredefinedDictionary(aruco_dict)
     board = cv.aruco.CharucoBoard((ROWS, COLS), SQUARE_LENGTH, MARKER_LENGTH, dictionary)
