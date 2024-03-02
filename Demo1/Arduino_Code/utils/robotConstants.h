@@ -16,4 +16,9 @@
 
 #define pi 3.141592
 
+#define kVBar       0.0585
+#define sigmaVBar   5
+#define kDeltaV     0.405
+#define sigmaDeltaV 5
+
 #endif
