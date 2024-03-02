@@ -16,11 +16,14 @@
  * 
  *      tracker.update();
  * 
+ *      // see the readme for a complete list of tracked metrics.
  *      double phiSpeed = tracker.getPhiSpeedMpS();
  *      double phiPos = tracker.getPhiPosRad();
  *      double forwardVelocity = tracker.getRhoSpeedMpS();
  * 
- *      // see the readme for a complete list of tracked metrics.
+ *      // re-zero only rho and phi
+ *      tracker.zeroRho();
+ *      tracker.zeroPhi();
  * }
  * 
  * @version 0.1
@@ -67,6 +70,7 @@ class Tracker {
         rightPosRadLastRead = 0;
         leftPosRadLastRead = 0;
         phiPosRad = 0;
+        rhoPosM = 0;
         xPosM = 0;
         yPosM = 0;
         rightSpeedRpS = 0;
@@ -76,6 +80,23 @@ class Tracker {
         lastVelocityReadTime = millis();
     }
 
+    /**
+     * @brief Zero out rho position
+     * 
+     */
+    void zeroRho() {
+        rhoPosM = 0;
+        rhoSpeedMpS = 0;
+    }
+
+    /**
+     * @brief Zero out phi position
+     * 
+     */
+    void zeroPhi() {
+        phiPosRad = 0;
+        phiSpeedRpS = 0;
+    }
 
     /**
      * @brief Update the data using the encoders. This method should be called once every loop, or at least once every 10ms.
@@ -126,8 +147,9 @@ class Tracker {
             xPosM = xPosM + ((WHEEL_RADIUS_M/2) * cos(phiPosRad) * (deltaLeft + deltaRight));
             yPosM = yPosM + ((WHEEL_RADIUS_M/2) * sin(phiPosRad) * (deltaLeft + deltaRight));
 
-            // phi
+            // phi and rho
             phiPosRad = (WHEEL_RADIUS_M / WHEEL_BASE_M) * (rightPosRad - leftPosRad);
+            rhoPosM = (WHEEL_RADIUS_M / 2) * (rightPosRad + leftPosRad);
 
         }
 
@@ -173,6 +195,10 @@ class Tracker {
 
     double getPhiPosRad() {
         return phiPosRad;
+    }
+
+    double getRhoPosM() {
+        return rhoPosM;
     }
 
     double getRightSpeedRpS() {

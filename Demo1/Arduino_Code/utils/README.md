@@ -20,6 +20,7 @@ For more documentation about each file. See the file header block.
     - leftSpeedRpS
     - rightSpeedRpS
     - phiPosRad
+    - rhoPosM
     - yPosM
     - xPosM
     - leftPosRad
