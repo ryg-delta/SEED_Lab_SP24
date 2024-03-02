@@ -26,7 +26,7 @@
 */
 
 #include <Arduino.h>
-#include <Serial.h>
+//#include <Serial.h>
 #include <Encoder.h>
 
 
@@ -45,8 +45,8 @@
 const double pi = 3.141592;
 const double MAX_VOLTAGE = 7.8;
 const int ENC_CNT_PER_REV = 3200;
-const double WHEEL_RADIUS_M = 0.1;
-const double DISTANCE_BETWEEN_WHEELS_M = 0.5;
+const double WHEEL_RADIUS_M = 0.074;
+const double DISTANCE_BETWEEN_WHEELS_M = 0.27;
 unsigned long desired_Ts_ms = 10; // desired sample time in milliseconds
 
 // Globals
@@ -145,7 +145,7 @@ void loop() {
     
     deltaVa = Va1 - Va2;
 
-    rotation_velocity_RadpS = WHEEL_RADIUS_M * (w_motor_RadpS[0] - w_motor_RadpS[1]) / DISTANCE_BETWEEN_WHEELS_M;
+    rotation_velocity_RadpS = WHEEL_RADIUS_M * (w_motor_RadpS[1] - w_motor_RadpS[0]) / DISTANCE_BETWEEN_WHEELS_M;
 
     Serial.print(current_time);
     Serial.print("\t");
