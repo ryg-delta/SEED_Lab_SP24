@@ -16,9 +16,14 @@
 
 #define pi 3.141592
 
-#define kVBar       0.0585
-#define sigmaVBar   5
-#define kDeltaV     0.405
-#define sigmaDeltaV 5
+#define K_VBAR       0.0585
+#define SIGMA_VBAR   5
+#define K_DELTAV     0.405
+#define SIGMA_DELTAV 5
+
+#define FEET_PER_MEETER  3.28084
+#define meters2feet(m)   (m * 3.28084)
+
+
 
 #endif

@@ -29,6 +29,8 @@
  * 
  */
 
+//TODO: add FIR filter for velocity measurements
+
 #ifndef LOCALIZER_H
 #define LOCALIZER_H
 
@@ -205,6 +207,7 @@ class Tracker {
     double rightPosRadLastRead; // these ones are for calculating velocity
     double leftPosRadLastRead;
     double phiPosRad;
+    double rhoPosM;
     double xPosM;
     double yPosM;
 
