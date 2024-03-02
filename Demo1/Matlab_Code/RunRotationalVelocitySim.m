@@ -4,8 +4,8 @@
 % required file: velocitysim.slx
 %
 %% Define parameters
-K=4; % DC gain [rad/Vs]
-sigma=12; % time constant reciprocal [1/s]
+K=0.405; % DC gain [rad/Vs]
+sigma=5; % time constant reciprocal [1/s]
 %% Run a Simulation
 %
 % open the block diagram so it appears in the documentation when published.

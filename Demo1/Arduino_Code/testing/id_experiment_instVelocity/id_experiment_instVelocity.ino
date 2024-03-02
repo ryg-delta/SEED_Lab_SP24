@@ -26,7 +26,7 @@
 */
 
 #include <Arduino.h>
-#include <Serial.h>
+//#include <Serial.h>
 #include <Encoder.h>
 
 
@@ -45,8 +45,8 @@
 const double pi = 3.141592;
 const double MAX_VOLTAGE = 7.8;
 const int ENC_CNT_PER_REV = 3200;
-const double WHEEL_RADIUS_M = 0.1;
-const double DISTANCE_BETWEEN_WHEELS_M = 0.5;
+const double WHEEL_RADIUS_M = 0.074;
+const double DISTANCE_BETWEEN_WHEELS_M = 0.27;
 unsigned long desired_Ts_ms = 10; // desired sample time in milliseconds
 
 
@@ -75,8 +75,8 @@ MotorPins motor_pins[2];
 
 
 
-double Va1 = 3.5;
-double Va2 = 3.5;
+double Va1 = 5;
+double Va2 = 5;
 double Va;
 double inst_fwd_vel_MpS = 0;
 
@@ -148,7 +148,7 @@ void loop() {
     
     Va = Va1 + Va2;
 
-    inst_fwd_vel_MpS = WHEEL_RADIUS_M * (w_motor_RadpS[0] + w_motor_RadpS[1]) / 2;
+    inst_fwd_vel_MpS = (WHEEL_RADIUS_M * (w_motor_RadpS[0] + w_motor_RadpS[1]) / 2);
 
     Serial.print(current_time);
     Serial.print("\t");
@@ -179,8 +179,8 @@ void loop() {
 
 
 // function to convert cnts to rads
-float countsToRads(long enc_counts) {
-  return 2*pi * (float) enc_counts/ ENC_CNT_PER_REV;
+double countsToRads(long enc_counts) {
+  return 2*pi * (double) enc_counts/ ENC_CNT_PER_REV;
 }
 
 
