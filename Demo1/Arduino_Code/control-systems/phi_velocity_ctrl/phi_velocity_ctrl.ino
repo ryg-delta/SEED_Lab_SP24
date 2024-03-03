@@ -35,7 +35,11 @@ double startTimeS;
 double currTimeS;
 const int NUM_SETPOINTS = 5;
 // each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 1.5, -3, 0};
+double setpointTimeseries[NUM_SETPOINTS] = {0, 1.5, -3, 0};  // radians per second
+
+// printing
+double printIntervalMs = 50;
+double lastPrintTimeMs =0;
 
 
 void setup() {
@@ -56,6 +60,7 @@ void setup() {
 void loop() {
 
     // get velocity
+    tracker.update();
     phi_vel_act = tracker.getPhiSpeedRpS();
     // compute output
     controller.Compute();
@@ -77,6 +82,14 @@ void loop() {
     else {
         Serial << "Finished" << endl;
         while(1);
+    }
+
+    
+    // print information
+    if (millis() - lastPrintTimeMs >= printIntervalMs) {
+        lastPrintTimeMs = millis();
+        // time  angular-velocity
+        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << phi_vel_act << endl;
     }
 
 

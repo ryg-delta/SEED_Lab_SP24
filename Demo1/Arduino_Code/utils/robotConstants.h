@@ -61,7 +61,7 @@ I2C:
 
 #define MAX_VOLTAGE 7.8
 #define volts2pwm(volts) ((volts/MAX_VOLTAGE)*255)
-#define volts2speed(volts) ((volts/MAX_VOLTAGE)*400)
+#define volts2speed(volts) ((volts/MAX_VOLTAGE)*400) // max speed for the motor driver library is +- 400
 
 
 

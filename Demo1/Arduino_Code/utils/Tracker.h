@@ -103,7 +103,7 @@ class Tracker {
     }
 
     /**
-     * @brief Turns on and off FIR filter for velocity inputs
+     * @brief Turns on and off FIR filter for velocity inputs. Defaults to false
      * 
      * @param filterVelocity 
      */
