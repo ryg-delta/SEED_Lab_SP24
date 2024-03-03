@@ -10,19 +10,23 @@
 #ifndef ROBOTCONSTANTS_H
 #define ROBOTCONSTANTS_H
 
+// wheels
 #define WHEEL_RADIUS_M  0.074 
 #define WHEEL_BASE_M    0.27 
 #define ENC_CNT_PER_REV  3200
 
-#define pi 3.141592
-
+// laplace domain
 #define K_VBAR       0.0585
 #define SIGMA_VBAR   5
 #define K_DELTAV     0.405
 #define SIGMA_DELTAV 5
 
+// math
+#define pi 3.141592
 #define FEET_PER_MEETER  3.28084
 #define meters2feet(m)   (m * 3.28084)
+
+// motors
 
 /*
 Left motor:
@@ -54,6 +58,10 @@ I2C:
 #define M2DIR  8
 #define M1PWM  9
 #define M2PWM  10
+
+#define MAX_VOLTAGE 7.8
+#define volts2pwm(volts) ((volts/MAX_VOLTAGE)*255)
+#define volts2speed(volts) ((volts/MAX_VOLTAGE)*400)
 
 
 

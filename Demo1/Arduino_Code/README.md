@@ -27,3 +27,11 @@ Arduino libraries used
   - Header: Streaming.h
   - Link: https://github.com/janelia-arduino/Streaming
   - Use: Allows use of C++ style text-streaming with the << operator.
+- PID
+  - Header: PID_v1.h
+  - Link: https://github.com/br3ttb/Arduino-PID-Library
+  - Use: Implements a robust PID algorithm given the controller parameters, inputs, and outputs.
+- DualMC33926MotorShield
+  - Header: DualMC33926MotorShield.h
+  - Link: https://github.com/pololu/dual-mc33926-motor-shield
+  - Use: Controls the open-source motor driver shield.
