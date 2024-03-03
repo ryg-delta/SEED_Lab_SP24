@@ -32,16 +32,18 @@
  * 
  */
 
-//TODO: add FIR filter for velocity measurements
 
 #ifndef LOCALIZER_H
 #define LOCALIZER_H
 
 #include <Arduino.h>
 #include <Encoder.h>
+#include <FIR.h>
 #include "robotConstants.h"
 
-#define VELOCITY_READ_INTERVAL_MS 10
+#define VELOCITY_READ_INTERVAL_MS 5
+#define FILTER_TAP_NUM 15
+
 
 class Tracker {
     public:
@@ -56,6 +58,8 @@ class Tracker {
         encRight = rightEncoder;
         encLeft = leftEncoder;
         zero();
+        rightFilter.setFilterCoeffs(filter_taps);
+        leftFilter.setFilterCoeffs(filter_taps);
     }
 
     /**
@@ -99,6 +103,15 @@ class Tracker {
     }
 
     /**
+     * @brief Turns on and off FIR filter for velocity inputs
+     * 
+     * @param filterVelocity 
+     */
+    void filterInputs(bool filterVelocity) {
+        this->filterVelocity = filterVelocity;
+    }
+
+    /**
      * @brief Update the data using the encoders. This method should be called once every loop, or at least once every 10ms.
      * 
      */
@@ -120,6 +133,10 @@ class Tracker {
             // theta
             rightSpeedRpS = (rightPosRad - rightPosRadLastRead) / timeStepS;
             leftSpeedRpS = (leftPosRad - leftPosRadLastRead) / timeStepS;
+            if (filterVelocity) {
+                rightSpeedRpS = rightFilter.processReading(rightSpeedRpS);
+                leftSpeedRpS = leftFilter.processReading(leftSpeedRpS);
+            }
 
             // rho and phi
             rhoSpeedMpS = (WHEEL_RADIUS_M / 2) * (rightSpeedRpS + leftSpeedRpS);
@@ -244,7 +261,49 @@ class Tracker {
     double phiSpeedRpS;
     double lastVelocityReadTime;
 
+    // velocity sample filter
+    static double filter_taps[FILTER_TAP_NUM];
+    bool filterVelocity = false;
+    FIR<double, FILTER_TAP_NUM> rightFilter;
+    FIR<double, FILTER_TAP_NUM> leftFilter;
 
+    
+
+
+};
+
+/*
+FIR filter designed with
+http://t-filter.appspot.com
+
+sampling frequency: 200 Hz
+
+* 0 Hz - 10 Hz
+gain = 1
+desired ripple = 5 dB
+actual ripple = 4.021057561671436 dB
+
+* 25 Hz - 100 Hz
+gain = 0
+desired attenuation = -40 dB
+actual attenuation = -40.316442921658115 dB
+*/
+double Tracker::filter_taps[FILTER_TAP_NUM] = {
+0.011055427525048043,
+0.028047792438000787,
+0.046818046210142496,
+0.07603656864052016,
+0.10213551415292775,
+0.12890374697321205,
+0.1445858930434234,
+0.15225745425026346,
+0.1445858930434234,
+0.12890374697321205,
+0.10213551415292775,
+0.07603656864052016,
+0.046818046210142496,
+0.028047792438000787,
+0.011055427525048043
 };
 
 #endif

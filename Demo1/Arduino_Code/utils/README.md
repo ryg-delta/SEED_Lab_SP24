@@ -27,4 +27,7 @@ For more documentation about each file. See the file header block.
     - rightPosRad
     - leftEncCnt
     - RightEncCnt
+  - Filter: A FIR filter can be implemented for velocity readings. To turn filter on, `tracker.filterInputs(true);`
+    - Gain: ![Filter gain](./FIR_filter_gain.jpg)
+    - Impulse Response: ![Filter impulse response](./FIR_filter_impulse_response.jpg)
 

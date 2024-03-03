@@ -24,6 +24,37 @@
 #define FEET_PER_MEETER  3.28084
 #define meters2feet(m)   (m * 3.28084)
 
+/*
+Left motor:
+    encoderPwr -> 3v3
+    encoderGnd -> GND
+    encoderA -> 2
+    encoderB -> 5
+    direction -> 7
+    pwm -> 9
+Right motor:
+    encoderPwr -> 3v3
+    encoderGnd -> GND
+    encoderA -> 3
+    encoderB -> 6
+    direction -> 8
+    pwm -> 10
+I2C:
+    SCL -> A5
+    SDA -> A4
+    GND -> GND
+*/
+
+#define ENCL_A 2
+#define ENCR_A 3
+#define nD2    4
+#define ENCL_B 5
+#define ENCR_B 6
+#define M1DIR  7
+#define M2DIR  8
+#define M1PWM  9
+#define M2PWM  10
+
 
 
 #endif

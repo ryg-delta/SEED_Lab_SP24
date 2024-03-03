@@ -6,3 +6,6 @@ The utils folder stores functions, classes, headers, etc. written by our team fo
 
 ## libs
 The libs folder stores C++ libraries from outside sources.
+
+## testing
+Contains tests for arduino subsystems.
