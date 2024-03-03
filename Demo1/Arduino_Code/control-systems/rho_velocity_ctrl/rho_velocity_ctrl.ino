@@ -1,7 +1,7 @@
 /**
- * @file phi_velocity_ctrl.ino
+ * @file rho_velocity_ctrl.ino
  * @author Blake Billharz, Ben Sprik
- * @brief Implement a velocity control system for the angular velocity
+ * @brief Implement a velocity control system for the forward velocity
  * @version 0.1
  * @date 2024-03-02
  * 
@@ -26,21 +26,21 @@ Vbase voltages;
 DualMC33926MotorShield motorDriver;
 
 // PID system
-double phi_vel_des, phi_vel_act, Vrot;
+double rho_vel_des, rho_vel_act, Vforward;
 //FIXME need to find kp
 double kp = 2, ki = 0, kd = 0;    // just proportional - KISS
-PID controller(&phi_vel_des, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
+PID controller(&rho_vel_des, &Vforward, &rho_vel_des, kp, ki, kd, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 4;
+const int NUM_SETPOINTS = 5;
 // each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 1.5, -3, 0};  // radians per second
+double setpointTimeseries[NUM_SETPOINTS] = {0, 0.1, -0.1, 0.25, 0};  // meters per second
 
 // printing
 double printIntervalMs = 50;
-double lastPrintTimeMs =0;
+double lastPrintTimeMs = 0;
 
 
 void setup() {
@@ -53,7 +53,7 @@ void setup() {
     // init
     Serial.begin(115200);
     motorDriver.init();
-    phi_vel_des = 0;
+    rho_vel_des = 0;
     startTimeS = millis();
 
 }
@@ -62,11 +62,11 @@ void loop() {
 
     // get velocity
     tracker.update();
-    phi_vel_act = tracker.getPhiSpeedRpS();
+    rho_vel_act = tracker.getRhoSpeedMpS();
     // compute output
     controller.Compute();
     // update voltages
-    voltages.setVoltages(0, Vrot);
+    voltages.setVoltages(Vforward, 0);
     // drive motor
     motorDriver.setM1Speed(volts2speed(voltages.getVleft()));
     motorDriver.setM2Speed(volts2speed(voltages.getVright()));
@@ -77,7 +77,7 @@ void loop() {
 
     if (currTimeS < NUM_SETPOINTS * 5) {
         int index = floor(currTimeS / 5);
-        phi_vel_des = setpointTimeseries[index];
+        rho_vel_des = setpointTimeseries[index];
     }
 
     else {
@@ -90,7 +90,7 @@ void loop() {
     if (millis() - lastPrintTimeMs >= printIntervalMs) {
         lastPrintTimeMs = millis();
         // time  angular-velocity
-        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << phi_vel_act << endl;
+        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << rho_vel_act << endl;
     }
 
 
