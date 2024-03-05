@@ -51,13 +51,13 @@ I2C:
 
 #define ENCL_A 2
 #define ENCR_A 3
-#define nD2    4
+// #define nD2    4
 #define ENCL_B 5
 #define ENCR_B 6
-#define M1DIR  7
-#define M2DIR  8
-#define M1PWM  9
-#define M2PWM  10
+// #define M1DIR  7
+// #define M2DIR  8
+// #define M1PWM  9
+// #define M2PWM  10
 
 #define MAX_VOLTAGE 7.8
 #define volts2pwm(volts) ((volts/MAX_VOLTAGE)*255)

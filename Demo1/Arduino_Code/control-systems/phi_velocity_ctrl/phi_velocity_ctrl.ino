@@ -17,7 +17,7 @@
 #include <DualMC33926MotorShield.h>
 
 // keeps track of position
-Tracker tracker(Encoder(ENCR_A, ENCR_B), Encoder(ENCL_A, ENCL_B));
+Tracker tracker(&Encoder(ENCR_A, ENCR_B), &Encoder(ENCL_A, ENCL_B));
 
 // voltage converter
 Vbase voltages;

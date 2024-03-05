@@ -41,7 +41,7 @@
 #include <FIR.h>
 #include "robotConstants.h"
 
-#define VELOCITY_READ_INTERVAL_MS 5
+#define VELOCITY_READ_INTERVAL_MS 20
 #define FILTER_TAP_NUM 15
 
 
@@ -126,7 +126,7 @@ class Tracker {
         if (curTime - lastVelocityReadTime >= VELOCITY_READ_INTERVAL_MS) {
 
             // setup variables
-            long timeStepS = 1000 * (curTime - lastVelocityReadTime);
+            double timeStepS = (curTime - lastVelocityReadTime)/1000;
             rightPosRad = cnt2Rad(rightEncCnt);
             leftPosRad = cnt2Rad(leftEncCnt);
 
@@ -180,7 +180,7 @@ class Tracker {
      * @return double 
      */
     double cnt2Rad(long count) {
-        return 2 * pi * (float) count / ENC_CNT_PER_REV;
+        return 2 * pi * (double) count / ENC_CNT_PER_REV;
     }
 
 

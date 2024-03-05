@@ -17,7 +17,7 @@
 #include <DualMC33926MotorShield.h>
 
 // keeps track of position
-Tracker tracker(Encoder(ENCR_A, ENCR_B), Encoder(ENCL_A, ENCL_B));
+Tracker tracker(&Encoder(ENCR_A, ENCR_B), &Encoder(ENCL_A, ENCL_B));
 
 // voltage converter
 Vbase voltages;
@@ -90,7 +90,10 @@ void loop() {
     if (millis() - lastPrintTimeMs >= printIntervalMs) {
         lastPrintTimeMs = millis();
         // time  angular-velocity
-        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << rho_vel_act << endl;
+        // Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << rho_vel_act << endl;
+        Serial.print(((lastPrintTimeMs/1000.0) - startTimeS));
+        Serial.print(" ");
+        Serial.println(rho_vel_act);
     }
 
 

@@ -19,7 +19,7 @@ Encoder leftEnc(ENCL_A, ENCL_B);
 Tracker tracker(&rightEnc, &leftEnc);
 Tracker filteredTracker(&rightEnc, &leftEnc);
 
-long sampleTimeMs = 10;
+long sampleTimeMs = 100;
 long lastReadMs = 0;
 double timeS = 0;
 
@@ -36,9 +36,12 @@ void setup() {
 void loop() {
 
   if (millis() - lastReadMs >= sampleTimeMs) {
+    lastReadMs = millis();
     Serial << timeS << " ";
-    Serial << tracker.getRhoSpeedMpS() << " " << tracker.getPhiSpeedRpS() << " " << tracker.getRhoPosM() << " " << tracker.getPhiPosRad() << " ";
-    Serial << filteredTracker.getRhoSpeedMpS() << " " << filteredTracker.getPhiSpeedRpS() << " " << filteredTracker.getRhoPosM() << " " << filteredTracker.getPhiPosRad() << " ";
+    Serial << tracker.getRhoSpeedMpS()*1'000'000 << " " << tracker.getPhiSpeedRpS()*1000 << " " << tracker.getRhoPosM() << " " << tracker.getPhiPosRad() << " ";
+    Serial << "| ";
+    Serial << filteredTracker.getRhoSpeedMpS()*1'000'000 << " " << filteredTracker.getPhiSpeedRpS()*1000 << " " << filteredTracker.getRhoPosM() << " " << filteredTracker.getPhiPosRad() << " ";
+    Serial << endl;
     timeS += sampleTimeMs/1000.0;
   }
 
