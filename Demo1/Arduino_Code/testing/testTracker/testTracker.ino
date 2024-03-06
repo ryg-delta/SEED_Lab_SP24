@@ -16,8 +16,8 @@
 Encoder rightEnc(ENCR_A, ENCR_B);
 Encoder leftEnc(ENCL_A, ENCL_B);
 
-// Tracker tracker(&rightEnc, &leftEnc);
-Tracker filteredTracker(&rightEnc, &leftEnc);
+Tracker unfilteredTracker(&rightEnc, &leftEnc);
+Tracker tracker(&rightEnc, &leftEnc);
 
 long sampleTimeMs = 100;
 long lastReadMs = 0;
@@ -25,29 +25,53 @@ double timeS = 0;
 
 
 void setup() {
-  // tracker.filterInputs(false);
-  filteredTracker.filterInputs(true);
+  tracker.filterInputs(true);
 
   Serial.begin(115200);
   while(!Serial);
-  // Serial.println("Time  rho_dot  phi_dot  rho  phi  |  rho_dot_filtered  phi_dot_filtered  rho_filtered  phi_filtered | right_speed_degPs left_speed_degPs");
+  Serial << "Ready" << endl;
+
 }
 
 void loop() {
 
+  // uncomment what you would like to print
+
   if (millis() - lastReadMs >= sampleTimeMs) {
     lastReadMs = millis();
-    // Serial << timeS << " ";
-    // Serial << tracker.getRhoSpeedMpS()*1000 << " " << tracker.getPhiSpeedRpS()*(180/pi) << " " << tracker.getRhoPosM() << " " << tracker.getPhiPosRad() << " ";
-    // Serial << "| ";
-    // Serial << filteredTracker.getRhoSpeedMpS()*1000 << " " << filteredTracker.getPhiSpeedRpS()*(180/pi) << " " << filteredTracker.getRhoPosM() << " " << filteredTracker.getPhiPosRad() << " ";
-    // Serial << "| ";
-    // Serial << filteredTracker.getPhiSpeedRpS() * (180/pi) << " ";
-    // Serial << filteredTracker.getLeftSpeedRpS()*(180/pi) << " " << filteredTracker.getRightSpeedRpS()*(180/pi) << " ";
-    // Serial << endl;
-    // timeS += sampleTimeMs/1000.0; //
+
+    // // wheel positions
+    // Serial << tracker.getRightPosRad() << " | ";
+    // Serial << tracker.getLeftPosRad() << " | ";
+
+    // // rho and phi pos
+    // Serial << tracker.getRhoPosM() << " | ";
+    // Serial << tracker.getPhiPosRad() << " | ";
+
+    // // x and y pos
+    // Serial << tracker.getXPosM() << " | ";
+    // Serial << tracker.getYPosM() << " | ";
+
+    // // wheel speeds
+    // Serial << tracker.getRightSpeedRpS() << " | ";
+    // Serial << tracker.getLeftSpeedRpS() << " | ";
+
+    // // wheel speeds unfiltered
+    // Serial << unfilteredTracker.getRightSpeedRpS() << " | ";
+    // Serial << unfilteredTracker.getLeftSpeedRpS() << " | ";
+
+    // // rho and phi speeds
+    // Serial << tracker.getRhoSpeedMpS() << " | ";
+    // Serial << tracker.getPhiSpeedRpS() << " | ";
+
+    // // rho and phi speeds unfiltered
+    // Serial << unfilteredTracker.getRhoSpeedMpS() << " | ";
+    // Serial << unfilteredTracker.getPhiSpeedRpS() << " | ";
+
+    Serial << endl;
+    timeS += sampleTimeMs/1000.0;
   }
 
-  // tracker.update();
-  filteredTracker.update();
+  tracker.update();
+  unfilteredTracker.update();
 }
