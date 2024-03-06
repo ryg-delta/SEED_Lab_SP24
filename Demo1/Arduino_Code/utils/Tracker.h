@@ -81,6 +81,8 @@ class Tracker {
         rhoSpeedMpS = 0;
         phiSpeedRpS = 0;
         lastVelocityReadTime = millis();
+        rightPosRadLastVelRead = 0;
+        leftPosRadLastVelRead = 0;
     }
 
     /**
@@ -129,22 +131,49 @@ class Tracker {
             rightPosRad = cnt2Rad(rightEncCnt);
             leftPosRad = cnt2Rad(leftEncCnt);
 
+            // Serial.print("Starting: "); Serial.print(" timeStepS = " + (String) timeStepS);
+            // Serial.print(" rightEncCnt = " + (String) rightEncCnt);
+            // Serial.print(" rightPosRad = " + (String) rightPosRad);
+
             // theta
-            rightSpeedRpS = (rightPosRad - rightPosRadLastRead) / timeStepS;
-            leftSpeedRpS = (leftPosRad - leftPosRadLastRead) / timeStepS;
+            rightSpeedRpS = (rightPosRad - rightPosRadLastVelRead) / timeStepS;
+            leftSpeedRpS = (leftPosRad - leftPosRadLastVelRead) / timeStepS;
+
+            Serial.print(" rightPosRad = ");
+            Serial.print(rightPosRad, 4);
+            Serial.print(" | ");
+            Serial.print(" rightPosRadLast = ");
+            Serial.print(rightPosRadLastVelRead, 4);
+            Serial.print(" | ");
+            Serial.print(" timeStepS = ");
+            Serial.print(timeStepS, 4);
+            Serial.print(" | ");
+            Serial.print(" rightSpeedRpS = ");
+            Serial.print(rightSpeedRpS, 4);
+            Serial.print(" | ");
+            
+
+            Serial.print(" rightSpeedRps = " + (String) (rightSpeedRpS)) + " | ";
+            Serial.print(" | ");
+
             if (filterVelocity) {
                 rightSpeedRpS = rightFilter.processReading(rightSpeedRpS);
                 leftSpeedRpS = leftFilter.processReading(leftSpeedRpS);
             }
 
+            
+
             // rho and phi
             rhoSpeedMpS = (WHEEL_RADIUS_M / 2) * (rightSpeedRpS + leftSpeedRpS);
             phiSpeedRpS = (WHEEL_RADIUS_M / WHEEL_BASE_M) * (rightSpeedRpS - leftSpeedRpS);
 
+            // Serial.print(" phiSpeedRps" + (String) phiSpeedRpS);
+            Serial.println("phiSpeedDegps = " + (String) (phiSpeedRpS * (180/pi)));
+
             // save variables for next time
             lastVelocityReadTime = curTime;
-            rightPosRadLastRead = rightPosRad;
-            leftPosRadLastRead = leftPosRad;
+            rightPosRadLastVelRead = rightPosRad;
+            leftPosRadLastVelRead = leftPosRad;
         }
 
 
@@ -246,7 +275,7 @@ class Tracker {
     long leftEncCntLast;
     double rightPosRad;
     double leftPosRad;
-    double rightPosRadLastRead; // these ones are for calculating velocity
+    double rightPosRadLastRead;
     double leftPosRadLastRead;
     double phiPosRad;
     double rhoPosM;
@@ -259,6 +288,8 @@ class Tracker {
     double rhoSpeedMpS;
     double phiSpeedRpS;
     long lastVelocityReadTime;
+    double rightPosRadLastVelRead;
+    double leftPosRadLastVelRead;
 
     // velocity sample filter
     static double filter_taps[FILTER_TAP_NUM];
@@ -290,7 +321,7 @@ sampling frequency: 50 Hz
 
 */
 
-static double filter_taps[FILTER_TAP_NUM] = {
+double Tracker::filter_taps[FILTER_TAP_NUM] = {
   -0.01598532973353844,
   0.05648712148047267,
   0.3139374054007945,

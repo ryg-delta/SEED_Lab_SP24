@@ -30,7 +30,7 @@ DualMC33926MotorShield motorDriver;
 // PID system
 double phi_vel_des, phi_vel_act, Vrot;
 //FIXME need to find kp
-double kp = 25, ki = 0, kd = 0;    // just proportional - KISS
+double kp = 30, ki = 0, kd = 0;    // just proportional - KISS
 PID controller(&phi_vel_act, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
 
 // test
