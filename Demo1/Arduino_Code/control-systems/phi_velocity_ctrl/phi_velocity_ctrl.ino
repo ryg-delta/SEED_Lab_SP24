@@ -17,7 +17,9 @@
 #include <DualMC33926MotorShield.h>
 
 // keeps track of position
-Tracker tracker(&Encoder(ENCR_A, ENCR_B), &Encoder(ENCL_A, ENCL_B));
+Encoder rightEnc(ENCR_A, ENCR_B);
+Encoder leftEnc(ENCL_A, ENCL_B);
+Tracker tracker(&rightEnc, &leftEnc);
 
 // voltage converter
 Vbase voltages;
@@ -28,15 +30,16 @@ DualMC33926MotorShield motorDriver;
 // PID system
 double phi_vel_des, phi_vel_act, Vrot;
 //FIXME need to find kp
-double kp = 2, ki = 0, kd = 0;    // just proportional - KISS
-PID controller(&phi_vel_des, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
+double kp = 25, ki = 0, kd = 0;    // just proportional - KISS
+PID controller(&phi_vel_act, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 4;
+const int NUM_SETPOINTS = 6;
 // each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 1.5, -3, 0};  // radians per second
+double degreesTimeseries[NUM_SETPOINTS] = {0, 5, 10, 20, 30, 0};
+double setpointTimeseries[NUM_SETPOINTS];
 
 // printing
 double printIntervalMs = 50;
@@ -46,15 +49,21 @@ double lastPrintTimeMs =0;
 void setup() {
 
     // settings
-    tracker.filterInputs(true);
+    tracker.filterInputs(false);
     controller.SetMode(AUTOMATIC);
     controller.SetOutputLimits(-2*MAX_VOLTAGE, 2*MAX_VOLTAGE);
 
     // init
     Serial.begin(115200);
+    Serial.println("Time  Velocity");
     motorDriver.init();
     phi_vel_des = 0;
+    phi_vel_act = tracker.getPhiSpeedRpS();
     startTimeS = millis();
+
+    for (int i = 0; i < NUM_SETPOINTS; i++) {
+      setpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
+    }
 
 }
 
@@ -90,7 +99,7 @@ void loop() {
     if (millis() - lastPrintTimeMs >= printIntervalMs) {
         lastPrintTimeMs = millis();
         // time  angular-velocity
-        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << phi_vel_act << endl;
+        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << phi_vel_des << " " << phi_vel_act << " " << Vrot << endl;
     }
 
 

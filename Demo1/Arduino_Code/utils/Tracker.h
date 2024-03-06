@@ -42,8 +42,7 @@
 #include "robotConstants.h"
 
 #define VELOCITY_READ_INTERVAL_MS 20
-#define FILTER_TAP_NUM 15
-
+#define FILTER_TAP_NUM 7
 
 class Tracker {
     public:
@@ -126,7 +125,7 @@ class Tracker {
         if (curTime - lastVelocityReadTime >= VELOCITY_READ_INTERVAL_MS) {
 
             // setup variables
-            double timeStepS = (curTime - lastVelocityReadTime)/1000;
+            double timeStepS = (curTime - lastVelocityReadTime)/1000.0;
             rightPosRad = cnt2Rad(rightEncCnt);
             leftPosRad = cnt2Rad(leftEncCnt);
 
@@ -259,7 +258,7 @@ class Tracker {
     double leftSpeedRpS;
     double rhoSpeedMpS;
     double phiSpeedRpS;
-    double lastVelocityReadTime;
+    long lastVelocityReadTime;
 
     // velocity sample filter
     static double filter_taps[FILTER_TAP_NUM];
@@ -273,37 +272,33 @@ class Tracker {
 };
 
 /*
+
 FIR filter designed with
 http://t-filter.appspot.com
 
-sampling frequency: 200 Hz
+sampling frequency: 50 Hz
 
-* 0 Hz - 10 Hz
-gain = 1
-desired ripple = 5 dB
-actual ripple = 4.021057561671436 dB
+* 0 Hz - 8 Hz
+  gain = 1
+  desired ripple = 5 dB
+  actual ripple = 3.4208755570234484 dB
 
-* 25 Hz - 100 Hz
-gain = 0
-desired attenuation = -40 dB
-actual attenuation = -40.316442921658115 dB
+* 20 Hz - 25 Hz
+  gain = 0
+  desired attenuation = -50 dB
+  actual attenuation = -51.67855666318294 dB
+
 */
-double Tracker::filter_taps[FILTER_TAP_NUM] = {
-0.011055427525048043,
-0.028047792438000787,
-0.046818046210142496,
-0.07603656864052016,
-0.10213551415292775,
-0.12890374697321205,
-0.1445858930434234,
-0.15225745425026346,
-0.1445858930434234,
-0.12890374697321205,
-0.10213551415292775,
-0.07603656864052016,
-0.046818046210142496,
-0.028047792438000787,
-0.011055427525048043
+
+static double filter_taps[FILTER_TAP_NUM] = {
+  -0.01598532973353844,
+  0.05648712148047267,
+  0.3139374054007945,
+  0.4855364950248441,
+  0.3139374054007945,
+  0.05648712148047267,
+  -0.01598532973353844
 };
+
 
 #endif

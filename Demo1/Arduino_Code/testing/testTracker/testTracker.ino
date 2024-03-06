@@ -38,9 +38,9 @@ void loop() {
   if (millis() - lastReadMs >= sampleTimeMs) {
     lastReadMs = millis();
     Serial << timeS << " ";
-    Serial << tracker.getRhoSpeedMpS()*1'000'000 << " " << tracker.getPhiSpeedRpS()*1000 << " " << tracker.getRhoPosM() << " " << tracker.getPhiPosRad() << " ";
+    Serial << tracker.getRhoSpeedMpS()*1000 << " " << tracker.getPhiSpeedRpS()*1000 << " " << tracker.getRhoPosM() << " " << tracker.getPhiPosRad() << " ";
     Serial << "| ";
-    Serial << filteredTracker.getRhoSpeedMpS()*1'000'000 << " " << filteredTracker.getPhiSpeedRpS()*1000 << " " << filteredTracker.getRhoPosM() << " " << filteredTracker.getPhiPosRad() << " ";
+    Serial << filteredTracker.getRhoSpeedMpS()*1000 << " " << filteredTracker.getPhiSpeedRpS()*1000 << " " << filteredTracker.getRhoPosM() << " " << filteredTracker.getPhiPosRad() << " ";
     Serial << endl;
     timeS += sampleTimeMs/1000.0;
   }
