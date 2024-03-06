@@ -54,7 +54,8 @@ I2C:
 #define ENCL_B 5
 #define ENCR_B 6
 
-#define MAX_VOLTAGE 7.8
+#define MAX_VOLTAGE 6.7211
+#define UNUSABLE_VOLTAGE 1.0789
 #define volts2pwm(volts) ((volts/MAX_VOLTAGE)*255)
 #define volts2speed(volts) ((volts/MAX_VOLTAGE)*400) // max speed for the motor driver library is +- 400
 

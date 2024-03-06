@@ -41,7 +41,7 @@
 #include <FIR.h>
 #include "robotConstants.h"
 
-#define VELOCITY_READ_INTERVAL_MS 20
+#define VELOCITY_READ_INTERVAL_MS 5
 #define FILTER_TAP_NUM 7
 
 class Tracker {
@@ -104,7 +104,7 @@ class Tracker {
     }
 
     /**
-     * @brief Turns on and off FIR filter for velocity inputs. Defaults to false
+     * @brief Turns on and off FIR filter for velocity inputs. Defaults to true
      * 
      * @param filterVelocity 
      */
@@ -268,7 +268,7 @@ class Tracker {
 
     // velocity sample filter
     static double filter_taps[FILTER_TAP_NUM];
-    bool filterVelocity = false;
+    bool filterVelocity = true;
     FIR<double, FILTER_TAP_NUM> rightFilter;
     FIR<double, FILTER_TAP_NUM> leftFilter;
 

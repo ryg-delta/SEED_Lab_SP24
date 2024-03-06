@@ -20,6 +20,8 @@
 #ifndef VBASE_H
 #define VBASE_H
 
+#include "robotConstants.h"
+
 class Vbase {
     public:
 
@@ -81,6 +83,20 @@ class Vbase {
 
         Vright = (Vforward + Vrot) / 2;
         Vleft = (Vforward - Vrot) / 2;
+
+        // adjust motor voltages for wheel deadzones
+        if (Vright > 0) {
+            Vright += UNUSABLE_VOLTAGE;
+        }
+        else if (Vright < 0) {
+            Vright -= UNUSABLE_VOLTAGE;
+        }
+        if (Vleft > 0) {
+            Vleft += UNUSABLE_VOLTAGE;
+        }
+        else if (Vleft < 0) {
+            Vleft -= UNUSABLE_VOLTAGE;
+        }
     }
 
 
