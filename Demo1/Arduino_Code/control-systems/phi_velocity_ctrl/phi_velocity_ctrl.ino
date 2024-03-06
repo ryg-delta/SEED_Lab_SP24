@@ -30,7 +30,7 @@ DualMC33926MotorShield motorDriver;
 // PID system
 double phi_vel_des, phi_vel_act, Vrot;
 //FIXME need to find kp
-double kp = 30, ki = 0, kd = 0;    // just proportional - KISS
+double kp = 5, ki = 0, kd = 0;    // just proportional - KISS
 PID controller(&phi_vel_act, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
 
 // test
@@ -55,12 +55,13 @@ void setup() {
 
     // init
     Serial.begin(115200);
-    Serial.println("Time  Velocity");
+    Serial.println("Time  Setpoint  Velocity");
     motorDriver.init();
     phi_vel_des = 0;
     phi_vel_act = tracker.getPhiSpeedRpS();
     startTimeS = millis();
 
+    // convert setpoints to radians per second
     for (int i = 0; i < NUM_SETPOINTS; i++) {
       setpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
     }
@@ -98,8 +99,13 @@ void loop() {
     // print information
     if (millis() - lastPrintTimeMs >= printIntervalMs) {
         lastPrintTimeMs = millis();
-        // time  angular-velocity
-        Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << phi_vel_des << " " << phi_vel_act << " " << Vrot << endl;
+        // time  setpoint angular-velocity
+        Serial.print(((lastPrintTimeMs/1000.0) - startTimeS));
+        Serial.print(" ");
+        Serial.print(phi_vel_des, 4);
+        Serial.print(" ");
+        Serial.print(phi_vel_act, 4);
+        Serial.println();
     }
 
 

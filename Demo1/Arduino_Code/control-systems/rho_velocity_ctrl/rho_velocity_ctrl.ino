@@ -29,14 +29,14 @@ DualMC33926MotorShield motorDriver;
 double rho_vel_des, rho_vel_act, Vforward;
 //FIXME need to find kp
 double kp = 2, ki = 0, kd = 0;    // just proportional - KISS
-PID controller(&rho_vel_des, &Vforward, &rho_vel_des, kp, ki, kd, DIRECT);
+PID controller(&rho_vel_act, &Vforward, &rho_vel_des, kp, ki, kd, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 5;
+const int NUM_SETPOINTS = 6;
 // each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 0.1, -0.1, 0.25, 0};  // meters per second
+double setpointTimeseries[NUM_SETPOINTS] = {0, 0.05, 0.1, 0.15, -0.025, 0};  // meters per second
 
 // printing
 double printIntervalMs = 50;
@@ -52,8 +52,10 @@ void setup() {
 
     // init
     Serial.begin(115200);
+    Serial.println("Time Velocity");
     motorDriver.init();
     rho_vel_des = 0;
+    rho_vel_act = tracker.getRhoSpeedMpS();
     startTimeS = millis();
 
 }
@@ -89,11 +91,13 @@ void loop() {
     // print information
     if (millis() - lastPrintTimeMs >= printIntervalMs) {
         lastPrintTimeMs = millis();
-        // time  angular-velocity
-        // Serial << ((lastPrintTimeMs/1000.0) - startTimeS) << " " << rho_vel_act << endl;
+        // time  setpoint velocity
         Serial.print(((lastPrintTimeMs/1000.0) - startTimeS));
         Serial.print(" ");
-        Serial.println(rho_vel_act);
+        Serial.print(rho_vel_des, 4);
+        Serial.print(" ");
+        Serial.print(rho_vel_act, 4);
+        Serial.println();
     }
 
 
