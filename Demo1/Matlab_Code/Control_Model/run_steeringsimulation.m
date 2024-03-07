@@ -14,6 +14,10 @@ b_measured_ft = .8858; % measured robot width;
 r_actual_ft = 0.2427; % actual wheel radius
 b_actual_ft = .8858; % actual robot width
 
+Unstable_V = 1.0827;
+
+V_max = 7.8 - Unstable_V;
+
 
 Ts=.01; % sample time in seconds
 %
@@ -30,8 +34,8 @@ sigma_r=5.4;
 K_l=1.55;
 sigma_l=5.5;
 
-phi_d=timeseries([pi/2 pi/2],[0 10]);
-rho_d=timeseries([0 0 3 3],[0 4.9 5 10]);
+phi_d=timeseries([pi/2 pi/2],[0 15]);
+rho_d=timeseries([0 0 3 3],[0 4.9 5 15]);
 
 
 out=sim('steeringsimulation.slx');
