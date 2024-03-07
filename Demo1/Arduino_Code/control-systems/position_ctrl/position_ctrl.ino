@@ -55,7 +55,8 @@ double currTimeS;
 const int NUM_SETPOINTS = 3;
 // each setpoint will last for 25 seconds
 double degreesTimeseries[NUM_SETPOINTS] = {0, 0};
-double rhoSetpointTimeseries[NUM_SETPOINTS] = {1, 0};
+double feetTimeseries[NUM_SETPOINTS] = {5, 0};
+double rhoSetpointTimeseries[NUM_SETPOINTS];
 double phiSetpointTimeseries[NUM_SETPOINTS];
 
 // printing
@@ -89,9 +90,10 @@ void setup() {
     rhoPosAct = tracker.getRhoPosM();
     startTimeS = millis();
 
-    // convert setpoints to radians per second
+    // convert setpoints to radians and feet
     for (int i = 0; i < NUM_SETPOINTS; i++) {
       phiSetpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
+      rhoSetpointTimeseries[i] = meters2feet(feetTimeseries[i]);
     }
 
     delay(3000);
