@@ -114,8 +114,8 @@ void loop() {
     // update voltages
     voltages.setVoltages(Vforward, Vrot);
     // drive motor
-    motorDriver.setM1Speed(-volts2speed(voltages.getVleft()));
-    motorDriver.setM2Speed(-volts2speed(voltages.getVright()));
+    motorDriver.setM1Speed(volts2speed(voltages.getVright()));
+    motorDriver.setM2Speed(volts2speed(voltages.getVleft()));
 
 
     // FSM to decide set point
