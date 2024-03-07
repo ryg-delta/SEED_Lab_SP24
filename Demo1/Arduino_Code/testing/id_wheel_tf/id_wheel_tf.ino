@@ -24,7 +24,7 @@ Tracker tracker(&rightEnc, &leftEnc);
 DualMC33926MotorShield motorDriver;
 
 // timing
-long delayTimeMs = 100;
+long delayTimeMs = 10;
 long lastReadTime;
 
 void setup() {
@@ -33,12 +33,12 @@ void setup() {
     lastReadTime = millis();
 }
 
-double voltage = 0;
+double voltage = 0.8;
 
 void loop() {
     // increment voltage on the wheels until the robot starts to move
 
-    motorDriver.setSpeeds(volts2speed(voltage), volts2speed(voltage));
+    motorDriver.setSpeeds(-volts2speed(voltage), -volts2speed(voltage));
     tracker.update();
 
     if (millis() - lastReadTime > delayTimeMs) {
@@ -46,7 +46,7 @@ void loop() {
             Serial.print("Bot started to move at ");
             Serial.print(voltage, 4);
             Serial.println(" volts");
-            while(1);
+            // while(1);
         }
         else {
             voltage += 0.0001;

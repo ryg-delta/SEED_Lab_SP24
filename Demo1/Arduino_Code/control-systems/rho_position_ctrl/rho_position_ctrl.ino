@@ -29,23 +29,21 @@ DualMC33926MotorShield motorDriver;
 
 // Velocity control system
 double rhoVelDes, rhoVelAct, Vforward;
-//FIXME need to find kp
-double kpv = 5, kiv = 0, kdv = 0;    // just proportional - KISS
+double kpv = 28, kiv = 0, kdv = 0;    // just proportional - KISS
 PID rhoVelCtrl(&rhoVelAct, &Vforward, &rhoVelDes, kpv, kiv, kdv, DIRECT);
 
 // Position control system
 double rhoPosDes, rhoPosAct;
-//FIXME determine control parameters
-double kpp = 0, kip = 0, kdp = 0;
-double maxRhoVel;
+double kpp = 14.24, kip = 31.56, kdp = 0;
+double maxRhoVel = 0.25;
 PID rhoPosCtrl(&rhoPosAct, &rhoVelDes, &rhoPosDes, kpp, kip, kdp, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 4;
-// each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 2, 0};
+const int NUM_SETPOINTS = 2;
+// each setpoint will last for 25 seconds
+double setpointTimeseries[NUM_SETPOINTS] = {2, 0};
 
 // printing
 double printIntervalMs = 50;
@@ -57,7 +55,7 @@ void setup() {
     tracker.filterInputs(false);
     rhoVelCtrl.SetMode(AUTOMATIC);
     rhoPosCtrl.SetMode(AUTOMATIC);
-    rhoVelCtrl.SetOutputLimits(-2*MAX_VOLTAGE, 2*MAX_VOLTAGE);
+    rhoVelCtrl.SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoPosCtrl.SetOutputLimits(-maxRhoVel, maxRhoVel);
 
     // init
@@ -69,6 +67,8 @@ void setup() {
     rhoVelAct = tracker.getRhoSpeedMpS();
     rhoPosAct = tracker.getRhoPosM();
     startTimeS = millis();
+
+    delay(3000);
 
 }
 
@@ -84,15 +84,15 @@ void loop() {
     // update voltages
     voltages.setVoltages(Vforward, 0);
     // drive motor
-    motorDriver.setM1Speed(volts2speed(voltages.getVleft()));
-    motorDriver.setM2Speed(volts2speed(voltages.getVright()));
+    motorDriver.setM1Speed(-volts2speed(voltages.getVleft()));
+    motorDriver.setM2Speed(-volts2speed(voltages.getVright()));
 
 
     // FSM to decide set point
     currTimeS = (millis()/1000.0) - startTimeS;
 
-    if (currTimeS < NUM_SETPOINTS * 5) {
-        int index = floor(currTimeS / 5);
+    if (currTimeS < NUM_SETPOINTS * 25) {
+        int index = floor(currTimeS / 25);
         rhoPosDes = setpointTimeseries[index];
     }
 

@@ -27,24 +27,36 @@ Vbase voltages;
 // motor driver
 DualMC33926MotorShield motorDriver;
 
-// Velocity control system
+// phi velocity control system
 double phiVelDes, phiVelAct, Vrot;
-double kpv = 3, kiv = 0, kdv = 0;    // just proportional - KISS
-PID phiVelCtrl(&phiVelAct, &Vrot, &phiVelDes, kpv, kiv, kdv, DIRECT);
+double phiVelKp = 3, phiVelKi = 0, phiVelKd = 0;    // just proportional - KISS
+PID phiVelCtrl(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
 
-// Position control system
+// phi position control system
 double phiPosDes, phiPosAct;
-double kpp = 35, kip = 12, kdp = 0;
+double phiPosKp = 35, phiPosKi = 12, phiPosKd = 0;
 double maxPhiVel = pi/2;
-PID phiPosCtrl(&phiPosAct, &phiVelDes, &phiPosDes, kpp, kip, kdp, DIRECT);
+PID phiPosCtrl(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
+
+// rho velocity control system
+double rhoVelDes, rhoVelAct, Vforward;
+double rhoVelKp = 10, rhoVelKi = 0, rhoVelKd = 0;    // just proportional - KISS
+PID rhoVelCtrl(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
+
+// rho position control system
+double rhoPosDes, rhoPosAct;
+double rhoPosKp = 14.24, rhoPosKi = 31.56, rhoPosKd = 0;
+double maxRhoVel = 0.5;
+PID rhoPosCtrl(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 4;
-// each setpoint will last for 10 seconds
-double degreesTimeseries[NUM_SETPOINTS] = {0, 90, -90, 0};
-double setpointTimeseries[NUM_SETPOINTS];
+const int NUM_SETPOINTS = 3;
+// each setpoint will last for 25 seconds
+double degreesTimeseries[NUM_SETPOINTS] = {0, 0};
+double rhoSetpointTimeseries[NUM_SETPOINTS] = {1, 0};
+double phiSetpointTimeseries[NUM_SETPOINTS];
 
 // printing
 double printIntervalMs = 10;
@@ -56,8 +68,12 @@ void setup() {
     tracker.filterInputs(true);
     phiVelCtrl.SetMode(AUTOMATIC);
     phiPosCtrl.SetMode(AUTOMATIC);
+    rhoVelCtrl.SetMode(AUTOMATIC);
+    rhoPosCtrl.SetMode(AUTOMATIC);
     phiVelCtrl.SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoVelCtrl.SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl.SetOutputLimits(-maxPhiVel, maxPhiVel);
+    rhoPosCtrl.SetOutputLimits(-maxRhoVel, maxRhoVel);
 
     // init
     Serial.begin(115200);
@@ -67,12 +83,18 @@ void setup() {
     phiVelDes = 0;
     phiVelAct = tracker.getPhiSpeedRpS();
     phiPosAct = tracker.getPhiPosRad();
+    rhoPosDes = 0;
+    rhoVelDes = 0;
+    rhoVelAct = tracker.getRhoSpeedMpS();
+    rhoPosAct = tracker.getRhoPosM();
     startTimeS = millis();
 
     // convert setpoints to radians per second
     for (int i = 0; i < NUM_SETPOINTS; i++) {
-      setpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
+      phiSetpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
     }
+
+    delay(3000);
 
 }
 
@@ -82,22 +104,27 @@ void loop() {
     tracker.update();
     phiVelAct = tracker.getPhiSpeedRpS();
     phiPosAct = tracker.getPhiPosRad();
+    rhoVelAct = tracker.getRhoSpeedMpS();
+    rhoPosAct = tracker.getRhoPosM();
     // compute output
     phiPosCtrl.Compute();
     phiVelCtrl.Compute();
+    rhoPosCtrl.Compute();
+    rhoVelCtrl.Compute();
     // update voltages
-    voltages.setVoltages(0, Vrot);
+    voltages.setVoltages(Vforward, Vrot);
     // drive motor
-    motorDriver.setM1Speed(volts2speed(voltages.getVleft()));
-    motorDriver.setM2Speed(volts2speed(voltages.getVright()));
+    motorDriver.setM1Speed(-volts2speed(voltages.getVleft()));
+    motorDriver.setM2Speed(-volts2speed(voltages.getVright()));
 
 
     // FSM to decide set point
     currTimeS = (millis()/1000.0) - startTimeS;
 
-    if (currTimeS < NUM_SETPOINTS * 7) {
-        int index = floor(currTimeS / 7);
-        phiPosDes = setpointTimeseries[index];
+    if (currTimeS < NUM_SETPOINTS * 10) {
+        int index = floor(currTimeS / 10);
+        phiPosDes = phiSetpointTimeseries[index];
+        rhoPosDes = rhoSetpointTimeseries[index];
     }
 
     else {
@@ -118,7 +145,9 @@ void loop() {
         Serial.print(" ");
         Serial.print(phiPosAct, 4);
         Serial.print(" ");
-        Serial.print(phiVelDes, 4);
+        Serial.print(rhoPosDes, 4);
+        Serial.print(" ");
+        Serial.print(rhoPosAct, 4);
         Serial.println();
     }
 

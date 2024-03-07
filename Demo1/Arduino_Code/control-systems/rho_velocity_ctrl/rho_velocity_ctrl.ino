@@ -17,7 +17,9 @@
 #include <DualMC33926MotorShield.h>
 
 // keeps track of position
-Tracker tracker(&Encoder(ENCR_A, ENCR_B), &Encoder(ENCL_A, ENCL_B));
+Encoder rightEnc(ENCR_A, ENCR_B);
+Encoder leftEnc(ENCL_A, ENCL_B);
+Tracker tracker(&rightEnc, &leftEnc);
 
 // voltage converter
 Vbase voltages;
@@ -27,8 +29,7 @@ DualMC33926MotorShield motorDriver;
 
 // PID system
 double rho_vel_des, rho_vel_act, Vforward;
-//FIXME need to find kp
-double kp = 2, ki = 0, kd = 0;    // just proportional - KISS
+double kp = 30, ki = 0, kd = 0;    // just proportional - KISS
 PID controller(&rho_vel_act, &Vforward, &rho_vel_des, kp, ki, kd, DIRECT);
 
 // test
@@ -36,7 +37,7 @@ double startTimeS;
 double currTimeS;
 const int NUM_SETPOINTS = 6;
 // each setpoint will last for 5 seconds
-double setpointTimeseries[NUM_SETPOINTS] = {0, 0.05, 0.1, 0.15, -0.025, 0};  // meters per second
+double setpointTimeseries[NUM_SETPOINTS] = {0, 0.05, 0.15, 0.25, -0.15, 0};  // meters per second
 
 // printing
 double printIntervalMs = 50;
@@ -70,8 +71,8 @@ void loop() {
     // update voltages
     voltages.setVoltages(Vforward, 0);
     // drive motor
-    motorDriver.setM1Speed(volts2speed(voltages.getVleft()));
-    motorDriver.setM2Speed(volts2speed(voltages.getVright()));
+    motorDriver.setM1Speed(-volts2speed(voltages.getVleft()));
+    motorDriver.setM2Speed(-volts2speed(voltages.getVright()));
 
 
     // FSM to decide set point

@@ -40,7 +40,7 @@ void loop() {
   if (millis() - lastReadMs >= sampleTimeMs) {
     lastReadMs = millis();
 
-    // // wheel positions
+    // wheel positions
     // Serial << tracker.getRightPosRad() << " | ";
     // Serial << tracker.getLeftPosRad() << " | ";
 

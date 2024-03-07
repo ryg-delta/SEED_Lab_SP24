@@ -29,8 +29,7 @@ DualMC33926MotorShield motorDriver;
 
 // PID system
 double phi_vel_des, phi_vel_act, Vrot;
-//FIXME need to find kp
-double kp = 6, ki = 0, kd = 0;    // just proportional - KISS
+double kp = 3, ki = 0, kd = 0;    // just proportional - KISS
 PID controller(&phi_vel_act, &Vrot, &phi_vel_des, kp, ki, kd, DIRECT);
 
 // test
@@ -38,7 +37,7 @@ double startTimeS;
 double currTimeS;
 const int NUM_SETPOINTS = 6;
 // each setpoint will last for 5 seconds
-double degreesTimeseries[NUM_SETPOINTS] = {0, 20, 30, 45, 90, 0};
+double degreesTimeseries[NUM_SETPOINTS] = {0, -30, -35, -40, -50, 0};
 double setpointTimeseries[NUM_SETPOINTS];
 
 // printing

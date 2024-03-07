@@ -41,7 +41,7 @@
 #include <FIR.h>
 #include "robotConstants.h"
 
-#define VELOCITY_READ_INTERVAL_MS 5
+#define VELOCITY_READ_INTERVAL_MS 6
 #define FILTER_TAP_NUM 7
 
 class Tracker {
@@ -282,28 +282,30 @@ class Tracker {
 FIR filter designed with
 http://t-filter.appspot.com
 
-sampling frequency: 50 Hz
+sampling frequency: 168 Hz
 
-* 0 Hz - 8 Hz
+* 0 Hz - 30 Hz
   gain = 1
   desired ripple = 5 dB
-  actual ripple = 3.4208755570234484 dB
+  actual ripple = 0.9876762398562766 dB
 
-* 20 Hz - 25 Hz
+* 70 Hz - 84 Hz
   gain = 0
-  desired attenuation = -50 dB
-  actual attenuation = -51.67855666318294 dB
+  desired attenuation = -40 dB
+  actual attenuation = -52.367093077634955 dB
 
 */
 
+#define FILTER_TAP_NUM 7
+
 double Tracker::filter_taps[FILTER_TAP_NUM] = {
-  -0.01598532973353844,
-  0.05648712148047267,
-  0.3139374054007945,
-  0.4855364950248441,
-  0.3139374054007945,
-  0.05648712148047267,
-  -0.01598532973353844
+  -0.05231456040945602,
+  -0.023658218343350714,
+  0.3021875219735181,
+  0.5494702980680782,
+  0.3021875219735181,
+  -0.023658218343350714,
+  -0.05231456040945602
 };
 
 
