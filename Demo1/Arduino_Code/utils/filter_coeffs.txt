@@ -1,0 +1,2 @@
+/* FIR filter designed with http://t-filter.appspot.com sampling frequency: 168 Hz * 0 Hz - 30 Hz   gain = 1   desired ripple = 5 dB   actual ripple = 0.9876762398562766 dB * 70 Hz - 84 Hz   gain = 0   desired attenuation = -40 dB   actual attenuation = -52.367093077634955 dB */ #define FILTER_TAP_NUM 7 static double filter_taps[FILTER_TAP_NUM] = {   -0.05231456040945602,   -0.0236582183
+43350714,   0.3021875219735181,   0.5494702980680782,   0.3021875219735181,   -0.023658218343350714,   -0.05231456040945602 };
