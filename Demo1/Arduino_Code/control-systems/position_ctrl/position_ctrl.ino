@@ -29,12 +29,12 @@ DualMC33926MotorShield motorDriver;
 
 // phi velocity control system
 double phiVelDes, phiVelAct, Vrot;
-double phiVelKp = 3, phiVelKi = 0, phiVelKd = 0;    // just proportional - KISS
+double phiVelKp = 2.5, phiVelKi = 0, phiVelKd = 0;    // just proportional - KISS
 PID phiVelCtrl(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
 
 // phi position control system
 double phiPosDes, phiPosAct;
-double phiPosKp = 35, phiPosKi = 12, phiPosKd = 0;
+double phiPosKp = 20, phiPosKi = 12, phiPosKd = 0;
 double maxPhiVel = pi/2;
 PID phiPosCtrl(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
 
@@ -52,10 +52,10 @@ PID rhoPosCtrl(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd,
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 3;
+const int NUM_SETPOINTS = 4;
 // each setpoint will last for 25 seconds
-double degreesTimeseries[NUM_SETPOINTS] = {0, 0};
-double feetTimeseries[NUM_SETPOINTS] = {5, 0};
+double degreesTimeseries[NUM_SETPOINTS] = {90, 90, 0};
+double feetTimeseries[NUM_SETPOINTS] = {0, 7, 7};
 double rhoSetpointTimeseries[NUM_SETPOINTS];
 double phiSetpointTimeseries[NUM_SETPOINTS];
 
@@ -93,7 +93,7 @@ void setup() {
     // convert setpoints to radians and feet
     for (int i = 0; i < NUM_SETPOINTS; i++) {
       phiSetpointTimeseries[i] = degreesTimeseries[i] * (pi/180);
-      rhoSetpointTimeseries[i] = meters2feet(feetTimeseries[i]);
+      rhoSetpointTimeseries[i] = feetTimeseries[i] / FEET_PER_MEETER;
     }
 
     delay(3000);
@@ -116,15 +116,15 @@ void loop() {
     // update voltages
     voltages.setVoltages(Vforward, Vrot);
     // drive motor
-    motorDriver.setM1Speed(volts2speed(voltages.getVright()));
-    motorDriver.setM2Speed(volts2speed(voltages.getVleft()));
+    motorDriver.setM1Speed(- volts2speed(voltages.getVright()));
+    motorDriver.setM2Speed(- volts2speed(voltages.getVleft()));
 
 
     // FSM to decide set point
     currTimeS = (millis()/1000.0) - startTimeS;
 
-    if (currTimeS < NUM_SETPOINTS * 10) {
-        int index = floor(currTimeS / 10);
+    if (currTimeS < NUM_SETPOINTS * 15) {
+        int index = floor(currTimeS / 15);
         phiPosDes = phiSetpointTimeseries[index];
         rhoPosDes = rhoSetpointTimeseries[index];
     }
@@ -150,6 +150,10 @@ void loop() {
         Serial.print(rhoPosDes, 4);
         Serial.print(" ");
         Serial.print(rhoPosAct, 4);
+        Serial.print(" ");
+        Serial.print(Vforward, 4);
+        Serial.print(" ");
+        Serial.print(Vrot);
         Serial.println();
     }
 

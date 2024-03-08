@@ -11,8 +11,8 @@
 #define ROBOTCONSTANTS_H
 
 // wheels
-#define WHEEL_RADIUS_M  0.074 
-#define WHEEL_BASE_M    0.27 
+#define WHEEL_RADIUS_M  0.0765625
+#define WHEEL_BASE_M    0.2711297
 #define ENC_CNT_PER_REV  3200
 
 // laplace domain
