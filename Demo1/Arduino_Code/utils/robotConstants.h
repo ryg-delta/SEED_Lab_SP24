@@ -65,11 +65,11 @@ I2C:
 #define PHI_VEL_KI 0
 #define PHI_VEL_KD 0
 
-#define PHI_POS_KP 35
+#define PHI_POS_KP 20
 #define PHI_POS_KI 12
 #define PHI_POS_KD 0
 
-#define RHO_VEL_KP 30
+#define RHO_VEL_KP 10
 #define RHO_VEL_KI 0
 #define RHO_VEL_KD 0
 
