@@ -54,8 +54,9 @@ double startTimeS;
 double currTimeS;
 const int NUM_SETPOINTS = 4;
 // each setpoint will last for 25 seconds
-double degreesTimeseries[NUM_SETPOINTS] = {90, 90, 0};
-double feetTimeseries[NUM_SETPOINTS] = {0, 7, 7};
+int setpointTime = 25;
+double degreesTimeseries[NUM_SETPOINTS] = {90, 90, 90};
+double feetTimeseries[NUM_SETPOINTS] = {0, 20, 0};
 double rhoSetpointTimeseries[NUM_SETPOINTS];
 double phiSetpointTimeseries[NUM_SETPOINTS];
 
@@ -123,8 +124,8 @@ void loop() {
     // FSM to decide set point
     currTimeS = (millis()/1000.0) - startTimeS;
 
-    if (currTimeS < NUM_SETPOINTS * 15) {
-        int index = floor(currTimeS / 15);
+    if (currTimeS < NUM_SETPOINTS * setpointTime) {
+        int index = floor(currTimeS / setpointTime);
         phiPosDes = phiSetpointTimeseries[index];
         rhoPosDes = rhoSetpointTimeseries[index];
     }
@@ -143,17 +144,16 @@ void loop() {
         // time  setpoint  angular-position
         Serial.print(((lastPrintTimeMs/1000.0) - startTimeS));
         Serial.print(" ");
-        Serial.print(phiPosDes, 4);
-        Serial.print(" ");
+        // Serial.print(phiPosDes, 4);
+        // Serial.print(" ");
         Serial.print(phiPosAct, 4);
         Serial.print(" ");
-        Serial.print(rhoPosDes, 4);
+        // Serial.print(rhoPosDes, 4);
+        // Serial.print(" ");
+        // Serial.print(rhoPosAct, 4);
+        Serial.print(tracker.getXPosM(), 4);
         Serial.print(" ");
-        Serial.print(rhoPosAct, 4);
-        Serial.print(" ");
-        Serial.print(Vforward, 4);
-        Serial.print(" ");
-        Serial.print(Vrot);
+        Serial.print(tracker.getYPosM(), 4);
         Serial.println();
     }
 
