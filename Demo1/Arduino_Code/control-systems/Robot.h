@@ -23,7 +23,7 @@ class Robot {
 
     Robot();
 
-    void turnInPlaceRad(double desAngleRad);
+    void turnInPlace(double desAngleRad);
 
     void turnInPlaceDeg(double desAngleDeg);
 
@@ -47,33 +47,61 @@ class Robot {
 
     // control systems //
     
+
     // phi velocity control system
+    /*
+        phi velocity -> V rotational
+    */
     double phiVelDes, phiVelAct, Vrot;
     double phiVelKp = 2.5, phiVelKi = 0, phiVelKd = 0;    // just proportional - KISS
     PID* phiVelCtrl;
 
+
     // phi position control system
+    /*
+        phi position -> phi velocity
+    */
     double phiPosDes, phiPosAct;
     double phiPosKp = 25, phiPosKi = 12, phiPosKd = 0;
     double maxPhiVel = pi/2;
     PID* phiPosCtrl;
 
-    // x position control system
-    double xPosDes, xPosAct;
-    double xPosKp = 0, xPosKi = 0, xPosKd = 0;  //TODO - find controller gains
+
+    // y position control system
+    /*
+        y position -> phi position
+    */
+    double yPosDes, yPosAct;
+    double yPosKp = 0, yPosKi = 0, yPosKd = 0;  //TODO - find controller gains
     double maxPhiAngle = pi/6;
-    PID* xPosCtrl;
+    PID* yPosCtrl;
+
 
     // rho velocity control system
+    /*
+        rho velocity -> V forward
+    */
     double rhoVelDes, rhoVelAct, Vforward;
     double rhoVelKp = 10, rhoVelKi = 0, rhoVelKd = 0;    // just proportional - KISS
     PID* rhoVelCtrl;
 
+
     // rho position control system
+    /*
+        rho position -> rho velocity
+    */
     double rhoPosDes, rhoPosAct;
     double rhoPosKp = 14.24, rhoPosKi = 31.56, rhoPosKd = 0;
     double maxRhoVel = 0.35;
     PID* rhoPosCtrl;
+
+    // x position control system
+    /*
+        x position -> rho velocity
+    */
+    double xPosDes, xPosAct;
+    double xPosKp = 0, xPosKi = 0, xPosKd = 0;  //TODO - tune controller gains
+    PID* xPosCtrl;
 
 };
 
