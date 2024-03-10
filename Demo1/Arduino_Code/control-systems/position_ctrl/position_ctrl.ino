@@ -34,7 +34,7 @@ PID phiVelCtrl(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRE
 
 // phi position control system
 double phiPosDes, phiPosAct;
-double phiPosKp = 20, phiPosKi = 12, phiPosKd = 0;
+double phiPosKp = 25, phiPosKi = 12, phiPosKd = 0;
 double maxPhiVel = pi/2;
 PID phiPosCtrl(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
 
@@ -46,17 +46,17 @@ PID rhoVelCtrl(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, 
 // rho position control system
 double rhoPosDes, rhoPosAct;
 double rhoPosKp = 14.24, rhoPosKi = 31.56, rhoPosKd = 0;
-double maxRhoVel = 0.5;
+double maxRhoVel = 0.35;
 PID rhoPosCtrl(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
 
 // test
 double startTimeS;
 double currTimeS;
-const int NUM_SETPOINTS = 4;
+const int NUM_SETPOINTS = 3;
 // each setpoint will last for 25 seconds
 int setpointTime = 25;
-double degreesTimeseries[NUM_SETPOINTS] = {90, 90, 90};
-double feetTimeseries[NUM_SETPOINTS] = {0, 20, 0};
+double degreesTimeseries[NUM_SETPOINTS] = {0, 0, 0};
+double feetTimeseries[NUM_SETPOINTS] = {10, 10, 10};
 double rhoSetpointTimeseries[NUM_SETPOINTS];
 double phiSetpointTimeseries[NUM_SETPOINTS];
 
