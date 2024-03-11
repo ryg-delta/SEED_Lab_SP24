@@ -30,6 +30,8 @@ void setup() {
     Serial.begin(115200);
     while(!Serial);
 
+    motorDriver->init();
+
     if (motorDriver->getFault()) {
         Serial << "Motor Driver fault. Exiting." << endl;
         while(1);

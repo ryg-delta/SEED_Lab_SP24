@@ -129,15 +129,15 @@ Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, Dual
 
     // motor driver
     this->motorDriver = motorDriver;
-    this->motorDriver->init();
+    // this->motorDriver->init();
 
     // control systems //
-    phiVelCtrl = &PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
-    phiPosCtrl = &PID(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
-    yPosCtrl = &PID(&yPosAct, &phiPosDes, &yPosDes, yPosKd, yPosKi, yPosKd, DIRECT);
-    rhoVelCtrl = &PID(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
-    rhoPosCtrl = &PID(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
-    xPosCtrl = &PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
+    phiVelCtrl = new PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
+    phiPosCtrl = new PID(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
+    // yPosCtrl = &PID(&yPosAct, &phiPosDes, &yPosDes, yPosKd, yPosKi, yPosKd, DIRECT);
+    rhoVelCtrl = new PID(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
+    rhoPosCtrl = new PID(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
+    // xPosCtrl = &PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
 
     // all control systems default to off
     phiVelCtrl->SetMode(0);
@@ -149,10 +149,7 @@ Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, Dual
 }
 
 Robot::~Robot() {
-    delete rightEnc;
-    delete leftEnc;
-    delete tracker;
-    delete motorDriver;
+    delete phiVelCtrl, phiPosCtrl, rhoVelCtrl, rhoPosCtrl;
 }
 
 void Robot::turnInPlace(double desAngleRad) {
@@ -194,9 +191,6 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoPosAct = tracker->getRhoPosM();
     double error = phiPosDes - phiPosAct;
 
-    Serial << "phi act: " << phiPosAct << endl;
-    Serial << "error: " << error << endl;
-
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
         // update values
@@ -208,14 +202,17 @@ void Robot::turnInPlace(double desAngleRad) {
         error = phiPosDes - phiPosAct;
         // compute output
         phiPosCtrl->Compute();
+        Serial << "phi vel act " << tracker->getPhiSpeedRpS() << " Vrot " << Vforward << " phi vel des " << phiVelDes << endl;
         phiVelCtrl->Compute();
+        Serial << "phi vel act " << tracker->getPhiSpeedRpS() << " Vrot " << Vforward << " phi vel des " << phiVelDes << endl;
         rhoPosCtrl->Compute();
         rhoVelCtrl->Compute();
         // update voltages
         voltages.setVoltages(Vforward, Vrot);
         // drive motor
-        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
-        motorDriver->setM2Speed(volts2speed(voltages.getVleft()));
+        Serial << "Voltages: " << voltages.getVright() << " " << volts2speed(voltages.getVright()) << endl;
+        motorDriver->setM1Speed(volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
         Serial << "error: " << error << endl;
         delay(10);
     }
