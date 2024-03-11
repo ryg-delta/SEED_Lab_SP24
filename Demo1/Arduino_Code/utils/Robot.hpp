@@ -231,12 +231,12 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 void Robot::goForwardM(double desDistanceMeters) {
     // tunings
     rhoVelCtrl->SetTunings(10, 0, 0);
-    xPosCtrl->SetTunings(14.24, 31.56, 0);
+    xPosCtrl->SetTunings(35, 31.56, 0);
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
-    yPosCtrl->SetTunings(0.1745, 0, 0);  // 1 deg/mm
+    yPosCtrl->SetTunings(20, 2, 0);  // 1 deg/mm
 
-    maxRhoVel = 0.5;
+    maxRhoVel = 0.2;
     maxPhiVel = pi/2;
     maxPhiAngle = 1000 * DEG_TO_RAD;
 
@@ -276,9 +276,7 @@ void Robot::goForwardM(double desDistanceMeters) {
         // compute controller outputs
         xPosCtrl->Compute();
         rhoVelCtrl->Compute();
-        Serial << "///////" << endl;
         yPosCtrl->Compute();
-        Serial << "///////" << endl;
         phiPosCtrl->Compute();
         phiVelCtrl->Compute();
         // update voltages
@@ -289,13 +287,11 @@ void Robot::goForwardM(double desDistanceMeters) {
 
         Serial << "ypos: ";
         Serial.print(yPosAct, 4);
-        Serial << " phiDes: ";
+        Serial << "  phiDes: ";
         Serial.print(phiPosDes, 4);
-        Serial << " y-error: ";
-        Serial.print(yPosDes - yPosAct, 5);
-        Serial << " phiPosDeg " << tracker->getPhiPosRad() * RAD_TO_DEG;
-        Serial << " | ";
-        Serial << "xpos: " << xPosAct << " rhoVelDes: " << rhoVelDes << endl;
+        Serial << "  phiPosDeg " << tracker->getPhiPosRad() * RAD_TO_DEG << "  |  ";
+
+        Serial << "xPos: " << xPosAct << "  error: " << error << endl;
 
         delay(10);
     }
