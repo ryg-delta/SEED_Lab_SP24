@@ -12,6 +12,10 @@
 #include <Streaming.h>
 
 // I named him rob
+Encoder* rightEnc = new Encoder(ENCR_A, ENCR_B);
+Encoder* leftEnc = new Encoder(ENCL_A, ENCL_B);
+Tracker* tracker = new Tracker(rightEnc, leftEnc);
+DualMC33926MotorShield* motorDriver = new DualMC33926MotorShield();
 
 // test
 double startTimeS;
@@ -26,9 +30,14 @@ void setup() {
     Serial.begin(115200);
     while(!Serial);
 
+    if (motorDriver->getFault()) {
+        Serial << "Motor Driver fault. Exiting." << endl;
+        while(1);
+    }
+
     Serial << "Beginning" << endl;
 
-    Robot rob;
+    Robot rob(rightEnc, leftEnc, tracker, motorDriver);
 
     rob.turnInPlaceDeg(90);
     delay(1000);
@@ -37,6 +46,8 @@ void setup() {
     rob.turnInPlaceDeg(540);
 
     Serial << "Finished" << endl;
+
+    delete leftEnc, rightEnc, tracker, motorDriver;
 
 }
 

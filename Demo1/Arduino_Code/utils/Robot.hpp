@@ -23,7 +23,9 @@ class Robot {
     public:
 
     //TODO Add singleton pattern
-    Robot();
+    Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, DualMC33926MotorShield* motorDriver);
+
+    ~Robot();
 
     void turnInPlace(double desAngleRad);
 
@@ -119,15 +121,15 @@ class Robot {
 ////////////////////////////////////   IMPLEMENTATION   //////////////////////////////////////////////////
 
 
-Robot::Robot() {
+Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, DualMC33926MotorShield* motorDriver) {
     // initialization of aggregate classes
-    rightEnc = &Encoder(ENCR_A, ENCR_B);
-    leftEnc = &Encoder(ENCL_A, ENCL_B);
-    tracker = &Tracker(rightEnc, leftEnc);\
+    rightEnc = rightEncoder;
+    leftEnc = leftEncoder;
+    this->tracker = tracker;
 
     // motor driver
-    motorDriver = &DualMC33926MotorShield();
-    motorDriver->init();
+    this->motorDriver = motorDriver;
+    this->motorDriver->init();
 
     // control systems //
     phiVelCtrl = &PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
@@ -146,10 +148,14 @@ Robot::Robot() {
     xPosCtrl->SetMode(0);    
 }
 
+Robot::~Robot() {
+    delete rightEnc;
+    delete leftEnc;
+    delete tracker;
+    delete motorDriver;
+}
+
 void Robot::turnInPlace(double desAngleRad) {
-    motorDriver->setM1Speed(100);
-    motorDriver->setM2Speed(-100);
-    delay(1000);
     // tunings
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
@@ -178,8 +184,6 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoPosCtrl->SetMode(AUTOMATIC);
 
     // init
-    tracker->update();
-    tracker->update();
     phiPosDes = desAngleRad;
     phiVelDes = 0;
     phiVelAct = tracker->getPhiSpeedRpS();
@@ -190,6 +194,9 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoPosAct = tracker->getRhoPosM();
     double error = phiPosDes - phiPosAct;
 
+    Serial << "phi act: " << phiPosAct << endl;
+    Serial << "error: " << error << endl;
+
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
         // update values
@@ -198,6 +205,7 @@ void Robot::turnInPlace(double desAngleRad) {
         phiPosAct = tracker->getPhiPosRad();
         rhoVelAct = tracker->getRhoSpeedMpS();
         rhoPosAct = tracker->getRhoPosM();
+        error = phiPosDes - phiPosAct;
         // compute output
         phiPosCtrl->Compute();
         phiVelCtrl->Compute();
@@ -206,9 +214,10 @@ void Robot::turnInPlace(double desAngleRad) {
         // update voltages
         voltages.setVoltages(Vforward, Vrot);
         // drive motor
-        // Serial << "Voltages: " << voltages.getVright() << " " << voltages.getVleft() << endl;
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
-        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+        motorDriver->setM2Speed(volts2speed(voltages.getVleft()));
+        Serial << "error: " << error << endl;
+        delay(10);
     }
 
     // TODO could maybe return some kind of indication of the final error.
