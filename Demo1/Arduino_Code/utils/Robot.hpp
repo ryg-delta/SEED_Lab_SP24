@@ -134,10 +134,10 @@ Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, Dual
     // control systems //
     phiVelCtrl = new PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
     phiPosCtrl = new PID(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
-    // yPosCtrl = &PID(&yPosAct, &phiPosDes, &yPosDes, yPosKd, yPosKi, yPosKd, DIRECT);
+    yPosCtrl = new PID(&yPosAct, &phiPosDes, &yPosDes, yPosKd, yPosKi, yPosKd, DIRECT);
     rhoVelCtrl = new PID(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
     rhoPosCtrl = new PID(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
-    // xPosCtrl = &PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
+    xPosCtrl = new PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
 
     // all control systems default to off
     phiVelCtrl->SetMode(0);
@@ -145,11 +145,19 @@ Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, Dual
     yPosCtrl->SetMode(0);
     rhoVelCtrl->SetMode(0);
     rhoPosCtrl->SetMode(0);
-    xPosCtrl->SetMode(0);    
+    xPosCtrl->SetMode(0);
+
+    // sample time will remain constant
+    phiVelCtrl->SetSampleTime(controllerSampleTimeMs);
+    phiPosCtrl->SetSampleTime(controllerSampleTimeMs);
+    yPosCtrl->SetSampleTime(controllerSampleTimeMs);
+    rhoVelCtrl->SetSampleTime(controllerSampleTimeMs);
+    rhoPosCtrl->SetSampleTime(controllerSampleTimeMs);
+    xPosCtrl->SetSampleTime(controllerSampleTimeMs);
 }
 
 Robot::~Robot() {
-    delete phiVelCtrl, phiPosCtrl, rhoVelCtrl, rhoPosCtrl;
+    delete phiVelCtrl, phiPosCtrl, rhoVelCtrl, rhoPosCtrl, xPosCtrl, yPosCtrl;
 }
 
 void Robot::turnInPlace(double desAngleRad) {
@@ -166,11 +174,6 @@ void Robot::turnInPlace(double desAngleRad) {
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
-
-    phiVelCtrl->SetSampleTime(controllerSampleTimeMs);
-    phiPosCtrl->SetSampleTime(controllerSampleTimeMs);
-    rhoVelCtrl->SetSampleTime(controllerSampleTimeMs);
-    rhoPosCtrl->SetSampleTime(controllerSampleTimeMs);
 
     double delta = 1 * (pi/180);
     
@@ -211,11 +214,17 @@ void Robot::turnInPlace(double desAngleRad) {
         voltages.setVoltages(Vforward, Vrot);
         // drive motor
         Serial << "Voltages: " << voltages.getVright() << " " << volts2speed(voltages.getVright()) << endl;
-        motorDriver->setM1Speed(volts2speed(voltages.getVright()));
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
         Serial << "error: " << error << endl;
         delay(10);
     }
+
+    // turn off control systems
+    phiVelCtrl->SetMode(0);
+    phiPosCtrl->SetMode(0);
+    rhoVelCtrl->SetMode(0);
+    rhoPosCtrl->SetMode(0);
 
     // TODO could maybe return some kind of indication of the final error.
 }
@@ -225,7 +234,62 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 }
 
 void Robot::goForwardM(double desDistanceMeters) {
-    //TODO
+    // tunings
+    rhoVelCtrl->SetTunings(10, 0, 0);
+    xPosCtrl->SetTunings(14.24, 31.56, 0);
+    phiVelCtrl->SetTunings(2.5, 0, 0);
+    phiPosCtrl->SetTunings(25, 12, 0);
+    yPosCtrl->SetTunings(17.45, 0, 0);  // 1 deg/mm
+
+    maxRhoVel = 0.5;
+    maxPhiVel = pi/2;
+    maxPhiAngle = 10 * DEG_TO_RAD;
+
+    double delta = 0.001;  // 1 mm
+
+    // turn on control systems
+    rhoVelCtrl->SetMode(AUTOMATIC);
+    xPosCtrl->SetMode(AUTOMATIC);
+    phiVelCtrl->SetMode(AUTOMATIC);
+    phiPosCtrl->SetMode(AUTOMATIC);
+    yPosCtrl->SetMode(AUTOMATIC);
+
+    // init
+    xPosAct = tracker->getXPosM();
+    xPosDes = desDistanceMeters;
+    yPosAct = tracker->getYPosM();
+    yPosDes = 0;
+    double error = xPosDes - xPosAct;
+
+    // loop
+    while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
+        // update values
+        tracker->update();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        xPosAct = tracker->getXPosM();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        phiPosAct = tracker->getPhiPosRad();
+        yPosAct = tracker->getYPosM();
+        error = xPosDes - xPosAct;
+        // compute controller outputs
+        xPosCtrl->Compute();
+        rhoVelCtrl->Compute();
+        yPosCtrl->Compute();
+        phiPosCtrl->Compute();
+        phiVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motors
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+
+    // turn off control systems
+    rhoVelCtrl->SetMode(0);
+    xPosCtrl->SetMode(0);
+    phiVelCtrl->SetMode(0);
+    phiPosCtrl->SetMode(0);
+    yPosCtrl->SetMode(0);
 }
 
 void Robot::goForwardF(double desDistanceFeet) {
