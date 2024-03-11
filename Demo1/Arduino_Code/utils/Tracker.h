@@ -117,7 +117,8 @@ class Tracker {
      * 
      */
     void update() {
-        
+        //FIXME I think the first few update after initialization might be way off?
+
         // read encoders and calculate positions in radians
         rightEncCnt = encRight->read();
         leftEncCnt = encLeft->read();
