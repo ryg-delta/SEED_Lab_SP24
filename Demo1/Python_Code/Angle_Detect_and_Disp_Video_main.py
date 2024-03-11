@@ -32,7 +32,7 @@ FOCAL_LENGTH = 120  # mm
 KNOWN_MARKER_WIDTH = 50  # mm
 KNOWN_MARKER_LENGTH = 50  # mm
 
-HFOV = 56.88  # deg
+HFOV = 56.6  # deg
 
 lcdMsg = "No markers\ndetected."
 detectedMarkers = False
@@ -207,7 +207,7 @@ if __name__ == "__main__":
             if detectedMarkers == True:
                 lcdMsg = "Aruco Detected"
                 print(lcdMsg)
-                angle = angle_detect()
+                angle = -angle_detect()+3.15
                 lcdMsg = f"Angle is: {angle}"
                 print("Center of Marker: ", detectedCenter)
                 print(lcdMsg)
