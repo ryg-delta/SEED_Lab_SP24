@@ -134,7 +134,7 @@ Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, Dual
     // control systems //
     phiVelCtrl = new PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
     phiPosCtrl = new PID(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
-    yPosCtrl = new PID(&yPosAct, &phiPosDes, &yPosDes, yPosKd, yPosKi, yPosKd, DIRECT);
+    yPosCtrl = new PID(&yPosAct, &phiPosDes, &yPosDes, yPosKp, yPosKi, yPosKd, P_ON_E, DIRECT);
     rhoVelCtrl = new PID(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
     rhoPosCtrl = new PID(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
     xPosCtrl = new PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
@@ -205,19 +205,14 @@ void Robot::turnInPlace(double desAngleRad) {
         error = phiPosDes - phiPosAct;
         // compute output
         phiPosCtrl->Compute();
-        Serial << "phi vel act " << tracker->getPhiSpeedRpS() << " Vrot " << Vforward << " phi vel des " << phiVelDes << endl;
         phiVelCtrl->Compute();
-        Serial << "phi vel act " << tracker->getPhiSpeedRpS() << " Vrot " << Vforward << " phi vel des " << phiVelDes << endl;
         rhoPosCtrl->Compute();
         rhoVelCtrl->Compute();
         // update voltages
         voltages.setVoltages(Vforward, Vrot);
         // drive motor
-        Serial << "Voltages: " << voltages.getVright() << " " << volts2speed(voltages.getVright()) << endl;
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
-        Serial << "error: " << error << endl;
-        delay(10);
     }
 
     // turn off control systems
@@ -239,13 +234,27 @@ void Robot::goForwardM(double desDistanceMeters) {
     xPosCtrl->SetTunings(14.24, 31.56, 0);
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
-    yPosCtrl->SetTunings(17.45, 0, 0);  // 1 deg/mm
+    yPosCtrl->SetTunings(0.1745, 0, 0);  // 1 deg/mm
 
     maxRhoVel = 0.5;
     maxPhiVel = pi/2;
-    maxPhiAngle = 10 * DEG_TO_RAD;
+    maxPhiAngle = 1000 * DEG_TO_RAD;
+
+    rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    xPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
+    phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
+    yPosCtrl->SetOutputLimits(-maxPhiAngle, maxPhiAngle);
 
     double delta = 0.001;  // 1 mm
+
+    // init
+    xPosAct = tracker->getXPosM();
+    xPosDes = desDistanceMeters;
+    yPosAct = tracker->getYPosM();
+    yPosDes = 0;
+    phiPosDes = 0;
+    double error = xPosDes - xPosAct;
 
     // turn on control systems
     rhoVelCtrl->SetMode(AUTOMATIC);
@@ -253,13 +262,6 @@ void Robot::goForwardM(double desDistanceMeters) {
     phiVelCtrl->SetMode(AUTOMATIC);
     phiPosCtrl->SetMode(AUTOMATIC);
     yPosCtrl->SetMode(AUTOMATIC);
-
-    // init
-    xPosAct = tracker->getXPosM();
-    xPosDes = desDistanceMeters;
-    yPosAct = tracker->getYPosM();
-    yPosDes = 0;
-    double error = xPosDes - xPosAct;
 
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
@@ -274,7 +276,9 @@ void Robot::goForwardM(double desDistanceMeters) {
         // compute controller outputs
         xPosCtrl->Compute();
         rhoVelCtrl->Compute();
+        Serial << "///////" << endl;
         yPosCtrl->Compute();
+        Serial << "///////" << endl;
         phiPosCtrl->Compute();
         phiVelCtrl->Compute();
         // update voltages
@@ -282,6 +286,18 @@ void Robot::goForwardM(double desDistanceMeters) {
         // drive motors
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+
+        Serial << "ypos: ";
+        Serial.print(yPosAct, 4);
+        Serial << " phiDes: ";
+        Serial.print(phiPosDes, 4);
+        Serial << " y-error: ";
+        Serial.print(yPosDes - yPosAct, 5);
+        Serial << " phiPosDeg " << tracker->getPhiPosRad() * RAD_TO_DEG;
+        Serial << " | ";
+        Serial << "xpos: " << xPosAct << " rhoVelDes: " << rhoVelDes << endl;
+
+        delay(10);
     }
 
     // turn off control systems

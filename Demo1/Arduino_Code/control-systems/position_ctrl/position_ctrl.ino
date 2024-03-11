@@ -30,6 +30,11 @@ void setup() {
     Serial.begin(115200);
     while(!Serial);
 
+    // while (1) {
+    //     Serial << "Right: " << rightEnc->read() << " | ";
+    //     Serial << "Left: " << leftEnc->read() << endl;
+    // }
+
     motorDriver->init();
 
     if (motorDriver->getFault()) {
@@ -41,11 +46,14 @@ void setup() {
 
     Robot rob(rightEnc, leftEnc, tracker, motorDriver);
 
-    rob.turnInPlaceDeg(90);
-    delay(1000);
-    rob.turnInPlaceDeg(0);
-    delay(1000);
-    rob.turnInPlaceDeg(540);
+    // Serial << "turn left" << endl;
+    // rob.turnInPlaceDeg(90);
+    // delay(3000);
+    // Serial << "turn back" << endl;
+    // rob.turnInPlaceDeg(0);
+    // delay(3000);
+    Serial << "go forward" << endl;
+    rob.goForwardF(10);
 
     Serial << "Finished" << endl;
 
