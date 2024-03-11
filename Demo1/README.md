@@ -1,9 +1,9 @@
 # Demo 1 Overview
 
 ## Localization and Control
--Goal: Move robot a set amount of feed and rotate robot by a specified amount of degrees.
--Structure:
--Metrics: 
+- Goal: Move robot a set amount of feed and rotate robot by a specified amount of degrees.
+- Structure:
+- Metrics: 
 
 ## Computer Vision and Communication
 - Goal: Use ArUco Detection to determine the angle of the marker with respect to the camera
