@@ -63,6 +63,7 @@ def arucoDetect(img):
     return detectedMarkers, ids, corners
 
 if __name__ == "__main__":
+'''
     # read in single image
     img = cv.imread("-20deg.png")
     img = cv.undistort(img, camMtx, distCoeffs)
@@ -91,9 +92,8 @@ if __name__ == "__main__":
     cv.aruco.drawDetectedMarkers(img, corners, ids)
     cv.imshow("target", img)
     cv.waitKey(0)
+ '''   
     
-    '''
-    Uncomment for live video feed.
     vidCap = initializeCamera()
     sleep(.2)
 
@@ -112,6 +112,7 @@ if __name__ == "__main__":
         # Read in camera data
         ret, frame = vidCap.read()
         grayscale = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        img = cv.undistort(grayscale, camMtx, distCoeffs)
 
         # If the image is good
         if ret:
@@ -145,6 +146,6 @@ if __name__ == "__main__":
     # It's over now
     print("Done Now!")
     vidCap.release()
-    '''
+    
 
     cv.destroyAllWindows()
