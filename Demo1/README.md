@@ -20,8 +20,8 @@
 ## Project Board
  - status: [none] or [started] or [waiting] or [in progress] or [done]
  - Name: Task 1 [status] + task 2 [status] + ... + task n [status]
- - Silje: Work on Angle Detection [done] + debugg [done]
- - Polina: Work on Charuco [done] + Pose detection [done] + debug [done]
- - Ben: Work on simulink [done] + simulations [done] + debugging [done]
- - Blake: Work on arduino code for the control system [done] + Encapsulate control libraries [done]
+  **Silje:** Work on Angle Detection [done] + debugg [done]
+  **Polina:** Work on Charuco [done] + Pose detection [done] + debug [done]
+  **Ben:** Work on simulink [done] + simulations [done] + debugging [done]
+  **Blake:** Work on arduino code for the control system [done] + Encapsulate control libraries [done]
   
