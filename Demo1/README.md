@@ -16,3 +16,12 @@
 - Arduino_Code: Contains code for the arduino and control system. 
 - Python_Code: Contains computer vision code for Raspberry Pi.
 - Matlab_Code: Contains simulink models used to design the position control system.
+
+  ##Project Board
+  - status: [none] or [started] or [waiting] or [in progress] or [done]
+  - Name: Task 1 [status] + task 2 [status] + ... + task n [status]
+  - Silje: Work on Angle Detection [done] + debugg [done]
+  - Polina: Work on Charuco [done] + Pose detection [done] + debug [done]
+  - Ben: Work on simulink [done] + simulations [done] + debugging [done]
+  - Blake: Work on arduino code for the control system [done] + Encapsulate control libraries [done]
+  
