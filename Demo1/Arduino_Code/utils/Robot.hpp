@@ -23,7 +23,7 @@ class Robot {
     public:
 
     //TODO Add singleton pattern
-    Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, DualMC33926MotorShield* motorDriver);
+    Robot();
 
     ~Robot();
 
@@ -73,16 +73,6 @@ class Robot {
     PID* phiPosCtrl;
 
 
-    // y position control system
-    /*
-        y position -> phi position
-    */
-    double yPosDes, yPosAct;
-    double yPosKp = 0, yPosKi = 0, yPosKd = 0;  //TODO - find controller gains
-    double maxPhiAngle = pi/6;
-    PID* yPosCtrl;
-
-
     // rho velocity control system
     /*
         rho velocity -> V forward
@@ -101,14 +91,6 @@ class Robot {
     double maxRhoVel = 0.35;
     PID* rhoPosCtrl;
 
-    // x position control system
-    /*
-        x position -> rho velocity
-    */
-    double xPosDes, xPosAct;
-    double xPosKp = 0, xPosKi = 0, xPosKd = 0;  //TODO - tune controller gains
-    PID* xPosCtrl;
-
 };
 
 
@@ -121,43 +103,44 @@ class Robot {
 ////////////////////////////////////   IMPLEMENTATION   //////////////////////////////////////////////////
 
 
-Robot::Robot(Encoder* rightEncoder, Encoder* leftEncoder, Tracker* tracker, DualMC33926MotorShield* motorDriver) {
+Robot::Robot() {
     // initialization of aggregate classes
-    rightEnc = rightEncoder;
-    leftEnc = leftEncoder;
-    this->tracker = tracker;
+    rightEnc = new Encoder(ENCR_A, ENCR_B);
+    leftEnc = new Encoder(ENCL_A, ENCL_B);
+    this->tracker = new Tracker(rightEnc, leftEnc);
 
     // motor driver
-    this->motorDriver = motorDriver;
-    // this->motorDriver->init();
+    this->motorDriver = new DualMC33926MotorShield();
+    this->motorDriver->init();
+
+    // check for motor fault
+    if (motorDriver->getFault()) {
+        Serial << "Motor Driver fault. Exiting." << endl;
+        while(1);
+    }
 
     // control systems //
     phiVelCtrl = new PID(&phiVelAct, &Vrot, &phiVelDes, phiVelKp, phiVelKi, phiVelKd, DIRECT);
     phiPosCtrl = new PID(&phiPosAct, &phiVelDes, &phiPosDes, phiPosKp, phiPosKi, phiPosKd, DIRECT);
-    yPosCtrl = new PID(&yPosAct, &phiPosDes, &yPosDes, yPosKp, yPosKi, yPosKd, P_ON_E, DIRECT);
     rhoVelCtrl = new PID(&rhoVelAct, &Vforward, &rhoVelDes, rhoVelKp, rhoVelKi, rhoVelKd, DIRECT);
     rhoPosCtrl = new PID(&rhoPosAct, &rhoVelDes, &rhoPosDes, rhoPosKp, rhoPosKi, rhoPosKd, DIRECT);
-    xPosCtrl = new PID(&xPosAct, &rhoVelDes, &xPosDes, xPosKp, xPosKi, xPosKd, DIRECT);
 
     // all control systems default to off
     phiVelCtrl->SetMode(0);
     phiPosCtrl->SetMode(0);
-    yPosCtrl->SetMode(0);
     rhoVelCtrl->SetMode(0);
     rhoPosCtrl->SetMode(0);
-    xPosCtrl->SetMode(0);
 
     // sample time will remain constant
     phiVelCtrl->SetSampleTime(controllerSampleTimeMs);
     phiPosCtrl->SetSampleTime(controllerSampleTimeMs);
-    yPosCtrl->SetSampleTime(controllerSampleTimeMs);
     rhoVelCtrl->SetSampleTime(controllerSampleTimeMs);
     rhoPosCtrl->SetSampleTime(controllerSampleTimeMs);
-    xPosCtrl->SetSampleTime(controllerSampleTimeMs);
 }
 
 Robot::~Robot() {
-    delete phiVelCtrl, phiPosCtrl, rhoVelCtrl, rhoPosCtrl, xPosCtrl, yPosCtrl;
+    delete motorDriver, tracker, rightEnc, leftEnc;
+    delete phiVelCtrl, phiPosCtrl, rhoVelCtrl, rhoPosCtrl;
 }
 
 void Robot::turnInPlace(double desAngleRad) {
@@ -228,23 +211,21 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
     turnInPlace(desAngleDeg * (pi/180));
 }
 
+//FIXME take out all x and y dependencies
+//TODO add in missing rho position control
 void Robot::goForwardM(double desDistanceMeters) {
     // tunings
     rhoVelCtrl->SetTunings(10, 0, 0);
-    xPosCtrl->SetTunings(35, 31.56, 0);
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
-    yPosCtrl->SetTunings(20, 2, 0);  // 1 deg/mm
 
     maxRhoVel = 0.2;
     maxPhiVel = pi/2;
     maxPhiAngle = 1000 * DEG_TO_RAD;
 
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
-    xPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
-    yPosCtrl->SetOutputLimits(-maxPhiAngle, maxPhiAngle);
 
     double delta = 0.001;  // 1 mm
 
