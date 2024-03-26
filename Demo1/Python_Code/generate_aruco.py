@@ -1,4 +1,13 @@
-import os
+# Demo 1
+# Polina Rygina
+# SEED Lab Spring 2024
+# How to Run: Execute using the python terminal.
+# Make sure either camera is connected for live feed, or you load correct image file.
+# Description:
+# Generates Charuco board. Make sure you translate the parameters to calibrate_camera.py.
+# References:
+# To do: 
+
 import numpy as np
 import cv2
 

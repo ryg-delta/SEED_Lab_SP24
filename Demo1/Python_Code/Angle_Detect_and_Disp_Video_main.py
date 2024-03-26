@@ -2,38 +2,37 @@
 # Polina Rygina and Silje Ostrem
 # SEED Lab Spring 2024
 # How to Run: Execute using the python terminal.
-# Make sure camera and LCD screen are connected
+# Make sure camera and LCD screen are connected.
 # Description:
-#
+# Runs angle detection algorithm along with live video feed to show angle between camera and aruco marker in real time.
 # References:
 # To do:
-# Similar Triangles Distance Formula
-# ArUco marker dimensions (Potentially transformation)
-# Difference of height = angle?
+
 
 import cv2 as cv
 from cv2 import aruco
 import numpy as np
 from time import sleep
 import board
-# import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
+import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import threading
 import math
 
 # Constants
-HEIGHT = 480
-WIDTH = 640
+HEIGHT = 480 # pixel
+WIDTH = 640 # pixel
 
-X_ORIGIN = WIDTH // 2
-Y_ORIGIN = HEIGHT // 2
+X_ORIGIN = WIDTH // 2 # pixel
+Y_ORIGIN = HEIGHT // 2 # pixel
 
 FOCAL_LENGTH = 120  # mm
 
 KNOWN_MARKER_WIDTH = 50  # mm
 KNOWN_MARKER_LENGTH = 50  # mm
 
-HFOV = 56.88  # deg
+HFOV = 56.6  # deg
 
+# Flags and other global variables
 lcdMsg = "No markers\ndetected."
 detectedMarkers = False
 
@@ -50,7 +49,7 @@ distance = 0
 # topLeft, top right, bottom right, bottom left
 cornerCoors = [[0, 0], [0, 0], [0, 0], [0, 0]]
 
-
+# Initialize camera object with height and width (480p)
 def initializeCamera():
     camera = cv.VideoCapture(0)
     camera.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
@@ -97,7 +96,7 @@ def arucoDetect(img):
 
 
 # Prints to LCD a message based on the detected_marker flag.
-'''
+# Runs parallel to main (threading)
 def printToLCD():
     global lcdMsg
     global detectedMarkers
@@ -118,9 +117,9 @@ def printToLCD():
                 currentMsg = "No markers\ndetected."
         sleep(0.1)
     return
-'''
 
 
+# Unused here, useful function that can be used later.
 def actualHeightAndWidth():
     # diff in y coordinates from top corners
     diff_height = abs(cornerCoors[0][1] - cornerCoors[1][0])
@@ -136,6 +135,7 @@ def angle_detect():
     distanceFromCenter = detectedCenter[0] - X_ORIGIN
     # Convert from pixels to mm
     '''
+    # Old math:
     distanceFromCenter = distanceFromCenter*(KNOWN_MARKER_WIDTH/actualWidth)
     angle = math.tan(distanceFromCenter/distance)
     #Convert from radians
@@ -145,32 +145,32 @@ def angle_detect():
     print("distance from center: ", distanceFromCenter)
     return angle
 
-
+# Unsued here, useful function that can be used later.
 def distance():
     distance = KNOWN_MARKER_WIDTH * FOCAL_LENGTH / actualHeight
     # Return the distance from the camera
     return distance
 
-
+# Unused here, useful function that can be used later.
 def mm_to_in(var):
     var = var / 25.4
     return var
 
 
 if __name__ == "__main__":
-    # lcdColumns = 16
-    # lcdRows = 2
+    lcdColumns = 16
+    lcdRows = 2
 
     # Initialise I2C bus.
-    # i2c = board.I2C()  # uses board.SCL and board.SDA
+    i2c = board.I2C()  # uses board.SCL and board.SDA
     sleep(1)
 
     # Initialise the LCD class
-    # lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
-    # lcd.color = [0, 100, 100]
+    lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
+    lcd.color = [0, 100, 100]
 
-    # myThread = threading.Thread(target=printToLCD, args=())
-    # myThread.start()
+    myThread = threading.Thread(target=printToLCD, args=())
+    myThread.start()
 
     vidCap = initializeCamera()
     sleep(.2)
@@ -197,7 +197,6 @@ if __name__ == "__main__":
         # If the image is good
         if ret:
             # Add lines to the image & Make it grayescale
-
             cv.line(grayscale, (X_ORIGIN, 0), (X_ORIGIN, HEIGHT), color=(0, 255, 0), thickness=5)
             # Call aruco detector
             detectedMarkers, ids, corners = arucoDetect(frame)
@@ -207,7 +206,7 @@ if __name__ == "__main__":
             if detectedMarkers == True:
                 lcdMsg = "Aruco Detected"
                 print(lcdMsg)
-                angle = angle_detect()
+                angle = -angle_detect() + 3.15
                 lcdMsg = f"Angle is: {angle}"
                 print("Center of Marker: ", detectedCenter)
                 print(lcdMsg)
@@ -217,7 +216,7 @@ if __name__ == "__main__":
         # wait for 1ms
         cv.waitKey(1)
 
-    # It's over now
+    # It's over now 
     print("Done Now!")
     vidCap.release()
     cv.destroyAllWindows()
