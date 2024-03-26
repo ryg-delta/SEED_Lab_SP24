@@ -211,53 +211,53 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
     turnInPlace(desAngleDeg * (pi/180));
 }
 
-//FIXME take out all x and y dependencies
-//TODO add in missing rho position control
 void Robot::goForwardM(double desDistanceMeters) {
     // tunings
     rhoVelCtrl->SetTunings(10, 0, 0);
+    rhoPosCtrl->SetTunings(10, 10, 0); //FIXME tunings
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
 
-    maxRhoVel = 0.2;
-    maxPhiVel = pi/2;
-    maxPhiAngle = 1000 * DEG_TO_RAD;
+    double maxRhoVel = 0.2;  //FIXME need faster performance
+    double maxPhiVel = pi/2;  
+    double maxPhiAngle = 100 * DEG_TO_RAD;
 
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
 
     double delta = 0.001;  // 1 mm
 
     // init
-    xPosAct = tracker->getXPosM();
-    xPosDes = desDistanceMeters;
-    yPosAct = tracker->getYPosM();
-    yPosDes = 0;
     phiPosDes = 0;
-    double error = xPosDes - xPosAct;
+    phiVelDes = 0;
+    phiVelAct = tracker->getPhiSpeedRpS();
+    phiPosAct = tracker->getPhiPosRad();
+    rhoPosDes = desDistanceMeters;
+    rhoVelDes = 0;
+    rhoVelAct = tracker->getRhoSpeedMpS();
+    rhoPosAct = tracker->getRhoPosM();
+    double error = rhoPosDes - rhoPosAct;
 
     // turn on control systems
     rhoVelCtrl->SetMode(AUTOMATIC);
-    xPosCtrl->SetMode(AUTOMATIC);
+    rhoPosCtrl->SetMode(AUTOMATIC);
     phiVelCtrl->SetMode(AUTOMATIC);
     phiPosCtrl->SetMode(AUTOMATIC);
-    yPosCtrl->SetMode(AUTOMATIC);
 
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
-        xPosAct = tracker->getXPosM();
+        rhoPosAct = tracker->getRhoPosM();
         phiVelAct = tracker->getPhiSpeedRpS();
         phiPosAct = tracker->getPhiPosRad();
-        yPosAct = tracker->getYPosM();
-        error = xPosDes - xPosAct;
+        error = rhoPosDes - rhoPosAct;
         // compute controller outputs
-        xPosCtrl->Compute();
+        rhoPosCtrl->Compute();
         rhoVelCtrl->Compute();
-        yPosCtrl->Compute();
         phiPosCtrl->Compute();
         phiVelCtrl->Compute();
         // update voltages
@@ -265,24 +265,14 @@ void Robot::goForwardM(double desDistanceMeters) {
         // drive motors
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
-
-        Serial << "ypos: ";
-        Serial.print(yPosAct, 4);
-        Serial << "  phiDes: ";
-        Serial.print(phiPosDes, 4);
-        Serial << "  phiPosDeg " << tracker->getPhiPosRad() * RAD_TO_DEG << "  |  ";
-
-        Serial << "xPos: " << xPosAct << "  error: " << error << endl;
-
-        delay(10);
     }
 
     // turn off control systems
     rhoVelCtrl->SetMode(0);
-    xPosCtrl->SetMode(0);
+    rhoPosCtrl->SetMode(0);
     phiVelCtrl->SetMode(0);
     phiPosCtrl->SetMode(0);
-    yPosCtrl->SetMode(0);
+
 }
 
 void Robot::goForwardF(double desDistanceFeet) {
