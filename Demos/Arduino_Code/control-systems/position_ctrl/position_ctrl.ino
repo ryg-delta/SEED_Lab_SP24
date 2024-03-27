@@ -30,15 +30,27 @@ void setup() {
 
     Serial << "Beginning" << endl;
 
+    // Serial << "Go forward" << endl;
+    // rob.goForwardF(1);
+    // Serial << "Done" << endl;
 
-    // Serial << "turn left" << endl;
-    // rob.turnInPlaceDeg(90);
-    // delay(3000);
-    // Serial << "turn back" << endl;
-    // rob.turnInPlaceDeg(0);
-    // delay(3000);
-    Serial << "go forward" << endl;
-    rob.goForwardF(10);
+    // delay(1000);
+
+    Serial << "turn around" << endl;
+    rob.turnInPlaceDeg(180);
+    Serial << "Done" << endl;
+
+
+    delay(1000);
+
+    // Serial << "go back" << endl;
+    // rob.goForwardF(1);
+    // Serial << "Done" << endl;
+
+    // delay(1000);
+
+    Serial << "Turn back around" << endl;
+    rob.turnInPlaceDeg(-180);
 
     Serial << "Finished" << endl;
 
