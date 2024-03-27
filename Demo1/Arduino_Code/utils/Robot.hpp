@@ -158,8 +158,8 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
 
-    double delta = 1 * (pi/180);
-    
+    double delta = radians(2);
+
     // turn on control systems
     phiVelCtrl->SetMode(AUTOMATIC);
     phiPosCtrl->SetMode(AUTOMATIC);
@@ -176,6 +176,8 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoVelAct = tracker->getRhoSpeedMpS();
     rhoPosAct = tracker->getRhoPosM();
     double error = phiPosDes - phiPosAct;
+
+    Serial >> "Phi des: " << phiPosDes << " | Phi act: " << phiPosAct << endl;
 
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
@@ -204,6 +206,9 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoVelCtrl->SetMode(0);
     rhoPosCtrl->SetMode(0);
 
+    // re-zero tracker
+    tracker->zero();
+
     // TODO could maybe return some kind of indication of the final error.
 }
 
@@ -214,7 +219,7 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 void Robot::goForwardM(double desDistanceMeters) {
     // tunings
     rhoVelCtrl->SetTunings(10, 0, 0);
-    rhoPosCtrl->SetTunings(10, 10, 0); //FIXME tunings
+    rhoPosCtrl->SetTunings(14, 32, 0);
     phiVelCtrl->SetTunings(2.5, 0, 0);
     phiPosCtrl->SetTunings(25, 12, 0);
 
@@ -227,7 +232,7 @@ void Robot::goForwardM(double desDistanceMeters) {
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
 
-    double delta = 0.001;  // 1 mm
+    double delta = 0.02;  // 1 mm
 
     // init
     phiPosDes = 0;
@@ -272,6 +277,9 @@ void Robot::goForwardM(double desDistanceMeters) {
     rhoPosCtrl->SetMode(0);
     phiVelCtrl->SetMode(0);
     phiPosCtrl->SetMode(0);
+
+    // re-zero tracker
+    tracker->zero();
 
 }
 
