@@ -35,6 +35,10 @@ class Robot {
 
     void goForwardF(double desDistanceFeet);
 
+    void driveInCircleM(double circleRadiusMeters, double periodSec);
+
+    void driveInCircleF(double circleRadiusFeet, double periodSec);
+
     Tracker* getTracker();
 
 
@@ -277,6 +281,103 @@ void Robot::goForwardM(double desDistanceMeters) {
 
 void Robot::goForwardF(double desDistanceFeet) {
     goForwardM(desDistanceFeet / FEET_PER_MEETER);
+}
+
+void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
+
+     // tunings
+    phiVelCtrl->SetTunings(2.5, 0, 0);
+    phiPosCtrl->SetTunings(25, 12, 0);
+    rhoVelCtrl->SetTunings(10, 0, 0);
+    rhoPosCtrl->SetTunings(14.24, 31.56, 0);
+
+    maxPhiVel = pi/2;
+    maxRhoVel = 0.35;
+
+    // FIXME - what should delta be??? should velocitys have different deltas?
+    double deltaRhoPos = 1 * (pi/180);   
+    double deltaPhiPos = 0.001;  // 1 mm
+
+    phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
+    rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
+    
+    // turn on control systems
+    phiVelCtrl->SetMode(AUTOMATIC);
+    phiPosCtrl->SetMode(AUTOMATIC);
+    rhoVelCtrl->SetMode(AUTOMATIC);
+    rhoPosCtrl->SetMode(AUTOMATIC);
+
+    // init
+    phiPosDes = 0;
+    phiVelDes = 2*pi*circleRadiusMeters / periodSec;
+    phiVelAct = tracker->getPhiSpeedRpS();
+    phiPosAct = tracker->getPhiPosRad();
+    rhoPosDes = 0;
+    rhoVelDes = 2*pi / periodSec;
+    rhoVelAct = tracker->getRhoSpeedMpS();
+    rhoPosAct = tracker->getRhoPosM();
+    double errorPhiVel = phiVelDes - phiVelAct;
+    double errorRhoVel = rhoVelDes - rhoVelAct;
+    
+    // start the robot
+    while (abs(errorPhiVel) > deltaPhiPos*10 && abs(errorRhoVel) > deltaRhoPos*10) {
+        // update values
+        tracker->update();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        rhoPosAct = tracker->getRhoPosM();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        phiPosAct = tracker->getPhiPosRad();
+        errorPhiVel = phiVelDes - phiVelAct;
+        errorRhoVel = rhoVelDes - rhoVelAct;
+        // compute controller outputs
+        rhoPosCtrl->Compute();
+        rhoVelCtrl->Compute();
+        phiPosCtrl->Compute();
+        phiVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motors
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+
+    double errorRhoPos = rhoPosDes - rhoPosAct;
+    double errorPhiPos = phiPosDes - phiPosAct;
+
+    // wait for the robot to get back to its starting point
+    while (abs(errorPhiPos) > deltaPhiPos || abs(errorRhoPos) > deltaRhoPos) {
+        // update values
+        tracker->update();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        rhoPosAct = tracker->getRhoPosM();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        phiPosAct = tracker->getPhiPosRad();
+        double errorRhoPos = rhoPosDes - rhoPosAct;
+        double errorPhiPos = phiPosDes - phiPosAct;
+        // compute controller outputs
+        rhoPosCtrl->Compute();
+        rhoVelCtrl->Compute();
+        phiPosCtrl->Compute();
+        phiVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motors
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+
+     // turn off control systems
+    rhoVelCtrl->SetMode(0);
+    rhoPosCtrl->SetMode(0);
+    phiVelCtrl->SetMode(0);
+    phiPosCtrl->SetMode(0);
+
+}
+
+void Robot::driveInCircleF(double circleRadiusFeet, double periodSec) {
+    driveInCirlceM(circleRadiusFeet / FEET_PER_MEETER, periodSec);
 }
 
 Tracker* Robot::getTracker() {
