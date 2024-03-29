@@ -181,8 +181,6 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoPosAct = tracker->getRhoPosM();
     double error = phiPosDes - phiPosAct;
 
-    Serial >> "Phi des: " << phiPosDes << " | Phi act: " << phiPosAct << endl;
-
     // loop
     while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
         // update values
@@ -202,6 +200,8 @@ void Robot::turnInPlace(double desAngleRad) {
         // drive motor
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+
+        delay(1);
     }
 
     // turn off control systems
@@ -385,7 +385,7 @@ void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
 }
 
 void Robot::driveInCircleF(double circleRadiusFeet, double periodSec) {
-    driveInCirlceM(circleRadiusFeet / FEET_PER_MEETER, periodSec);
+    driveInCircleM(circleRadiusFeet / FEET_PER_MEETER, periodSec);
 }
 
 Tracker* Robot::getTracker() {

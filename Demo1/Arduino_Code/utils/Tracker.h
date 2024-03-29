@@ -66,6 +66,8 @@ class Tracker {
      * 
      */
     void zero() {
+        encRight->readAndReset();
+        encLeft->readAndReset();
         rightPosRad = 0;
         leftPosRad = 0;
         rightEncCntLast = 0;
