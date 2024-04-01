@@ -27,6 +27,8 @@ Y_ORIGIN = HEIGHT // 2
 #ENSURE THIS IS ACCURATE
 markerSize = 138
 
+#ARD_i2c = SMBus(1)
+#ARD_ADDR = 0x08
 HFOV = 60  # deg
 
 # Flags and other global variables
@@ -39,7 +41,7 @@ detectedWidth = 0
 actualWidth = 0
 actualHeight = 0
 
-detectedAngle = 0
+angle = 0.0
 
 distanceFromCenter = 0
 distance = 0
@@ -86,7 +88,7 @@ def arucoDetect(img):
 
     if ids is not None:
         detectedMarkers = True
-        # Assigns Corner COordinates
+        # Assigns Corner Coordinates
         cornerCoors = [[corners[0][0][0][0], corners[0][0][0][1]],
                        [corners[0][0][1][0], corners[0][0][1][1]],
                        [corners[0][0][2][0], corners[0][0][2][1]],
@@ -126,8 +128,10 @@ def printToLCD():
 '''
 
 def interrupt():
+
     while True:
         print("interrupt")
+
         time.sleep(0.001)  # Sleep for 1 millisecond
 
 def angle_detect():
@@ -142,17 +146,22 @@ def angle_detect():
     angle = angle *180/math.pi
     '''
     angle = HFOV * (distanceFromCenter / (WIDTH))
-    print("distance from center: ", distanceFromCenter)
+    #print("distance from center: ", distanceFromCenter)
     return angle
 
 def pixToMeter(pix):
     meters = pix * 0.0002645833
     return meters
 
-def write_data(angle,distance):
-    angle_sent = (-angle+HFOV/2)(255/HFOV)
-    angle_sent= round(angle_sent)
-    ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
+def write_data(angle, distance):
+    if detectedMarkers:
+        angle_sent = (-angle+HFOV/2)*(255/HFOV)
+        angle_sent = round(angle_sent)
+        print(angle_sent)
+        print(distance)
+        #ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
+        #time.sleep(0.001)
+        print("sent!")
 
 
 if __name__ == "__main__":
@@ -170,9 +179,9 @@ if __name__ == "__main__":
     myThread = threading.Thread(target=printToLCD, args=())
     myThread.start()'''
     # Create a thread for the interrupt function
-    interrupt_thread = threading.Thread(target=interrupt)
-    interrupt_thread.daemon = True
-    interrupt_thread.start()
+    #interrupt_thread = threading.Thread(target=write_data)
+    #interrupt_thread.daemon = True
+    #interrupt_thread.start()
 
     vidCap = initializeCamera()
     sleep(1)
@@ -186,7 +195,7 @@ if __name__ == "__main__":
     cv.destroyAllWindows()
     cv.imshow("Live Video", frame)
     detectedMarkers = False
-
+    interruptCounter = 0
     # While loop for LIVE video
 
     while True:
@@ -203,22 +212,16 @@ if __name__ == "__main__":
 
             # If aruco detected, find the corners
             if detectedMarkers == True:
-                '''                
-                lcdMsg = "Aruco Detected"
-                print(lcdMsg)
-                angle = -angle_detect() + 3.15
-                lcdMsg = f"Angle is: {angle}"
-                print("Center of Marker: ", detectedCenter)
-                print(lcdMsg)
-'''
+
                 totalMarkers = range(0, ids.size)
                 for ids, corner, i in zip(corners, ids, totalMarkers):
                     rvec = np.array(rvec)
                     tvec = np.array(tvec)
-                    print(tvec)
+
                     #dist = tvec[i][2]
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
-                    dist = pixToMeter(dist)
+                    distance = pixToMeter(dist)
+                    angle = -angle_detect() + 3.15
 
                     topRight = corners[i][0][0]
                     topRight = (int(topRight[0]), int(topRight[1]))
@@ -237,7 +240,16 @@ if __name__ == "__main__":
                         cv.LINE_AA,
                     )
 
+                    '''                
+                    lcdMsg = f"Angle: {angle}\nDistance: {distance}"
+                    print(lcdMsg)
+                    '''
+
             cv.imshow("Live Video", img)
+            interruptCounter += 1
+            if interruptCounter == 100:
+                interruptCounter = 0
+                write_data(angle, distance)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
             # wait for 1ms
