@@ -296,12 +296,12 @@ void Robot::goForwardF(double desDistanceFeet) {
 void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
 
      // tunings
-    phiVelCtrl->SetTunings(7, 5, 0);
-    rhoVelCtrl->SetTunings(10, 5, 0);
+    phiVelCtrl->SetTunings(5, 9, 0);
+    rhoVelCtrl->SetTunings(13, 15, 0);
 
     // FIXME - what should delta be??? should velocitys have different deltas?
-    double deltaRhoPos = 1 * (pi/180);   
-    double deltaPhiPos = 0.001;  // 1 mm
+    double deltaPhiPos = DEG_TO_RAD*10;   
+    double deltaRhoPos = 0.001;  // 1 mm
 
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
@@ -319,7 +319,7 @@ void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
     rhoPosAct = tracker->getRhoPosM();
     
     // start the robot
-    while (abs(phiPosAct) < 2*pi && abs(rhoPosAct) < 2*pi*circleRadiusMeters) {
+    while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
