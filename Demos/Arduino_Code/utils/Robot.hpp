@@ -294,8 +294,8 @@ void Robot::goForwardF(double desDistanceFeet) {
 void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
 
      // tunings
-    phiVelCtrl->SetTunings(2.5, 0, 0);
-    rhoVelCtrl->SetTunings(10, 0, 0);
+    phiVelCtrl->SetTunings(7, 5, 0);
+    rhoVelCtrl->SetTunings(10, 5, 0);
 
     maxPhiVel = pi/2;
     maxRhoVel = 0.35;
@@ -312,15 +312,15 @@ void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
     rhoVelCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = 2*pi*circleRadiusMeters / periodSec;
+    phiVelDes = 2*pi / periodSec;
     phiVelAct = tracker->getPhiSpeedRpS();
     phiPosAct = tracker->getPhiPosRad();
-    rhoVelDes = 2*pi / periodSec;
+    rhoVelDes = 2*pi*circleRadiusMeters / periodSec;
     rhoVelAct = tracker->getRhoSpeedMpS();
     rhoPosAct = tracker->getRhoPosM();
     
     // start the robot
-    while (abs(phiPosAct) < 2*pi) {
+    while (abs(phiPosAct) < 2*pi && abs(rhoPosAct) < 2*pi*circleRadiusMeters) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
@@ -336,11 +336,17 @@ void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
     }
-    // stop the robot where it is
-    goForwardM(0);
+   
      // turn off control systems
     rhoVelCtrl->SetMode(0);
     phiVelCtrl->SetMode(0);
+
+     // stop the robot where it is
+    tracker->zero();
+    motorDriver->setM1Speed(0);
+    motorDriver->setM2Speed(0);
+    goForwardM(0);
+    turnInPlaceDeg(0);
 
 }
 
