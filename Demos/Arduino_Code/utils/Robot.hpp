@@ -39,6 +39,8 @@ class Robot {
 
     void driveInCircleF(double circleRadiusFeet, double periodSec);
 
+    void stop();
+
     Tracker* getTracker();
 
 
@@ -291,14 +293,11 @@ void Robot::goForwardF(double desDistanceFeet) {
     goForwardM(desDistanceFeet / FEET_PER_MEETER);
 }
 
-void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
+void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
 
      // tunings
     phiVelCtrl->SetTunings(2.5, 0, 0);
     rhoVelCtrl->SetTunings(10, 0, 0);
-
-    maxPhiVel = pi/2;
-    maxRhoVel = 0.35;
 
     // FIXME - what should delta be??? should velocitys have different deltas?
     double deltaRhoPos = 1 * (pi/180);   
@@ -312,10 +311,10 @@ void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
     rhoVelCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = 2*pi*circleRadiusMeters / periodSec;
+    phiVelDes = forwardSpeed / circleRadiusMeters;
     phiVelAct = tracker->getPhiSpeedRpS();
     phiPosAct = tracker->getPhiPosRad();
-    rhoVelDes = 2*pi / periodSec;
+    rhoVelDes = forwardSpeed;
     rhoVelAct = tracker->getRhoSpeedMpS();
     rhoPosAct = tracker->getRhoPosM();
     
@@ -336,16 +335,21 @@ void Robot::driveInCircleM(double circleRadiusMeters, double periodSec) {
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
     }
-    // stop the robot where it is
-    goForwardM(0);
+    Serial << "Done spinning" << endl;
+    stop();
+    Serial << "Stopped" << endl;
      // turn off control systems
     rhoVelCtrl->SetMode(0);
     phiVelCtrl->SetMode(0);
 
 }
 
-void Robot::driveInCircleF(double circleRadiusFeet, double periodSec) {
-    driveInCircleM(circleRadiusFeet / FEET_PER_MEETER, periodSec);
+void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
+    driveInCircleM(circleRadiusFeet / FEET_PER_MEETER, forwardSpeed / FEET_PER_MEETER);
+}
+
+void Robot::stop() {
+    motorDriver->setSpeeds(0,0);
 }
 
 Tracker* Robot::getTracker() {
