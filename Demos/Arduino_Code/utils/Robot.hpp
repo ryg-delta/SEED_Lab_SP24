@@ -31,6 +31,8 @@ class Robot {
 
     void turnInPlaceDeg(double desAngleDeg);
 
+    void scan(volatile bool& stopCondition);
+
     void goForwardM(double desDistanceMeters);
 
     void goForwardF(double desDistanceFeet);
@@ -220,6 +222,60 @@ void Robot::turnInPlace(double desAngleRad) {
 
 void Robot::turnInPlaceDeg(double desAngleDeg) {
     turnInPlace(desAngleDeg * (pi/180));
+}
+
+void Robot::scan(volatile bool& stopCondition) {
+    // tunings
+    phiVelCtrl->SetTunings(2.5, 0, 0); //FIXME: tune
+    rhoVelCtrl->SetTunings(25, 0, 0);
+    rhoPosCtrl->SetTunings(35, 0, 0);
+
+    maxPhiVel = radians(10);
+    maxRhoVel = 1;
+
+    phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
+
+    // turn on control systems
+    phiVelCtrl->SetMode(AUTOMATIC);
+    phiPosCtrl->SetMode(AUTOMATIC);
+    rhoVelCtrl->SetMode(AUTOMATIC);
+    rhoPosCtrl->SetMode(AUTOMATIC);
+
+    // init
+    phiVelDes = pi;
+    phiVelAct = tracker->getPhiSpeedRpS();
+    rhoPosDes = 0;
+    rhoVelDes = 0;
+    rhoVelAct = tracker->getRhoSpeedMpS();
+    rhoPosAct = tracker->getRhoPosM();
+    
+    while (!stopCondition) {
+        // update values
+        tracker->update();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        rhoPosAct = tracker->getRhoPosM();
+        // compute output
+        phiVelCtrl->Compute();
+        rhoPosCtrl->Compute();
+        rhoVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motor
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+
+    // turn off control systems
+    phiVelCtrl->SetMode(0);
+    rhoVelCtrl->SetMode(0);
+    rhoPosCtrl->SetMode(0);
+
+    // re-zero tracker
+    tracker->zero();
+
 }
 
 void Robot::goForwardM(double desDistanceMeters) {
