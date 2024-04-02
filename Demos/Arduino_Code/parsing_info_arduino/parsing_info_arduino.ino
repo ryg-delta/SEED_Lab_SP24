@@ -9,8 +9,8 @@ volatile bool targetAquired = false;
 double desiredAngle;
 double desiredDistanceM;
 
-void recieveTargetISR() {
-    Wire.read(); // read offset??
+void recieveTargetISR(int howMany) {
+    // Wire.read(); // read offset??
 
     uint8_t angle = Wire.read();
     uint8_t distance = Wire.read();
