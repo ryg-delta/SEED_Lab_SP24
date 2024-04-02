@@ -32,7 +32,7 @@ void setup() {
 
     Serial << "Go in a circle" << endl;
     double startTime = millis();
-    rob.driveInCircleF(1, 5);
+    rob.driveInCircleF(1.1, 1.75);
     double endTime = millis() - startTime;
     Serial << "Finished" << endl;
     Serial << "Time: " << endTime << endl;
