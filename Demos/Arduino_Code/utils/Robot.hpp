@@ -27,22 +27,68 @@ class Robot {
 
     ~Robot();
 
+    /**
+     * @brief Turns in place, positive numbers correspond to CCW rotation.
+     * 
+     * @param desAngleRad The amount of radians to turn
+     */
     void turnInPlace(double desAngleRad);
 
+    /**
+     * @brief Turns in place, positive numbers correspond to CCW rotation.
+     * 
+     * @param desAngleDeg The amount of degrees to turn
+     */
     void turnInPlaceDeg(double desAngleDeg);
 
+    /**
+     * @brief Turn slowly until stopCondition is met (becomes true)
+     * 
+     * @param stopCondition 
+     */
     void scan(volatile bool& stopCondition);
 
+    /**
+     * @brief Goes foreward in a straight line
+     * 
+     * @param desDistanceMeters The distance in meters to go forward
+     */
     void goForwardM(double desDistanceMeters);
 
+    /**
+     * @brief Goes foreward in a straight line
+     * 
+     * @param desDistanceFeet The distance in feet to go forward
+     */
     void goForwardF(double desDistanceFeet);
 
-    void driveInCircleM(double circleRadiusMeters, double periodSec);
+    /**
+     * @brief Drives the robot in a circle starting at its current heading
+     * 
+     * @param circleRadiusMeters The radius of the circle to drive in meters
+     * @param forwardSpeed The desired radial speed for the robot traversing the circle in m/s
+     */
+    void driveInCircleM(double circleRadiusMeters, double forwardSpeed);
 
-    void driveInCircleF(double circleRadiusFeet, double periodSec);
+    /**
+     * @brief Drives the robot in a circle starting at its current heading
+     * 
+     * @param circleRadiusMeters The radius of the circle to drive in feet
+     * @param forwardSpeed The desired radial speed for the robot traversing the circle in f/s
+     */
+    void driveInCircleF(double circleRadiusFeet, double forwardSpeed);
 
+    /**
+     * @brief Stops the motors from spinning
+     * 
+     */
     void stop();
 
+    /**
+     * @brief Get the Tracker instance
+     * 
+     * @return Tracker* 
+     */
     Tracker* getTracker();
 
 
