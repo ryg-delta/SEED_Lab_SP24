@@ -152,19 +152,19 @@ Robot::~Robot() {
 void Robot::turnInPlace(double desAngleRad) {
     // tunings
     phiVelCtrl->SetTunings(2.5, 0, 0);
-    phiPosCtrl->SetTunings(25, 12, 0);
-    rhoVelCtrl->SetTunings(10, 0, 0);
-    rhoPosCtrl->SetTunings(14.24, 31.56, 0);
+    phiPosCtrl->SetTunings(45, 0, 0.65);
+    rhoVelCtrl->SetTunings(25, 0, 0);
+    rhoPosCtrl->SetTunings(35, 0, 0);
 
-    maxPhiVel = pi/2;
-    maxRhoVel = 0.35;
+    maxPhiVel = 1*pi;
+    maxRhoVel = 1;
 
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
 
-    double delta = radians(2);
+    double delta = radians(1);
 
     // turn on control systems
     phiVelCtrl->SetMode(AUTOMATIC);
@@ -225,11 +225,11 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 void Robot::goForwardM(double desDistanceMeters) {
     // tunings
     rhoVelCtrl->SetTunings(10, 0, 0);
-    rhoPosCtrl->SetTunings(14, 32, 0);
+    rhoPosCtrl->SetTunings(25, 0, 0);
     phiVelCtrl->SetTunings(2.5, 0, 0);
-    phiPosCtrl->SetTunings(25, 12, 0);
+    phiPosCtrl->SetTunings(40, 12, 0);
 
-    double maxRhoVel = 0.2;  //FIXME need faster performance
+    double maxRhoVel = 1.5;
     double maxPhiVel = pi/2;  
     double maxPhiAngle = 100 * DEG_TO_RAD;
 
