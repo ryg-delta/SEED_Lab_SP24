@@ -26,7 +26,7 @@ X_ORIGIN = WIDTH // 2
 Y_ORIGIN = HEIGHT // 2
 
 #ENSURE THIS IS ACCURATE
-markerSize = 3.9 * 37.7952755906 # cm * factor
+markerSize = 5.2 * 37.7952755906 # cm * factor
 
 ARD_ADDR = 0x08
 HFOV = 60  # deg
@@ -157,15 +157,9 @@ def write_data(angle, distance):
     if detectedMarkers:
         angle_sent = (-angle+HFOV/2)*(255/HFOV)
         angle_sent = int(angle_sent)
-        angle_high = str(angle_sent >> 8)
-        angle_low = str(angle_sent & 0xFF)
         distance = int(distance*100)
-        distance_high = str(distance >> 8)
-        distance_low = str(distance & 0xFF)
-        
-        data = int(angle_high+ angle_low+ distance_high+distance_low)
-        print(data)
-        ARD_i2c.write_byte_data(ARD_ADDR, detectedMarkers, data)
+        print(distance)
+        ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
         print(angle_sent)
         print(distance)
         print("sent!")
