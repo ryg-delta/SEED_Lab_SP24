@@ -13,10 +13,11 @@ import cv2 as cv
 from cv2 import aruco
 import numpy as np
 from time import sleep
+import board
 import threading
 import time
 from smbus2 import SMBus
-#import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
+import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 
 HEIGHT = 480
 WIDTH = 640
@@ -27,8 +28,7 @@ Y_ORIGIN = HEIGHT // 2
 #ENSURE THIS IS ACCURATE
 markerSize = 3.9 * 37.7952755906 # cm * factor
 
-#ARD_i2c = SMBus(1)
-#ARD_ADDR = 0x08
+ARD_ADDR = 0x08
 HFOV = 60  # deg
 
 # Flags and other global variables
@@ -104,7 +104,7 @@ def arucoDetect(img):
 
 # Prints to LCD a message based on the detected_marker flag.
 # Runs parallel to main (threading)
-'''
+
 def printToLCD():
     global lcdMsg
     global detectedMarkers
@@ -125,7 +125,7 @@ def printToLCD():
                 currentMsg = "No markers\ndetected."
         sleep(0.1)
     return
-'''
+
 
 def interrupt():
 
@@ -156,32 +156,39 @@ def pixToMeter(pix):
 def write_data(angle, distance):
     if detectedMarkers:
         angle_sent = (-angle+HFOV/2)*(255/HFOV)
-        angle_sent = round(angle_sent)
+        angle_sent = int(angle_sent)
+        angle_high = str(angle_sent >> 8)
+        angle_low = str(angle_sent & 0xFF)
+        distance = int(distance*100)
+        distance_high = str(distance >> 8)
+        distance_low = str(distance & 0xFF)
+        
+        data = int(angle_high+ angle_low+ distance_high+distance_low)
+        print(data)
+        ARD_i2c.write_byte_data(ARD_ADDR, detectedMarkers, data)
         print(angle_sent)
         print(distance)
-        #ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
-        #time.sleep(0.001)
         print("sent!")
 
 
 if __name__ == "__main__":
-    ''' lcdColumns = 16
+    lcdColumns = 16
     lcdRows = 2
-
+    
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
-    sleep(1)
+    sleep(2)
 
     # Initialise the LCD class
     lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
     lcd.color = [0, 100, 100]
 
     myThread = threading.Thread(target=printToLCD, args=())
-    myThread.start()'''
-    # Create a thread for the interrupt function
-    #interrupt_thread = threading.Thread(target=write_data)
-    #interrupt_thread.daemon = True
-    #interrupt_thread.start()
+    myThread.start()
+    
+    
+    ARD_i2c = SMBus(1)
+    sleep(1)
 
     vidCap = initializeCamera()
     sleep(1)
@@ -212,7 +219,6 @@ if __name__ == "__main__":
 
             # If aruco detected, find the corners
             if detectedMarkers == True:
-
                 totalMarkers = range(0, ids.size)
                 for ids, corner, i in zip(corners, ids, totalMarkers):
                     rvec = np.array(rvec)
@@ -220,15 +226,16 @@ if __name__ == "__main__":
 
                     #dist = tvec[i][2]
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
-                    distance = pixToMeter(dist) * 96 #Fudge Factor
+                    distance = np.round(pixToMeter(dist),decimals=2) * 95
                     angle = -angle_detect() + 3.15
 
                     topRight = corners[i][0][0]
                     topRight = (int(topRight[0]), int(topRight[1]))
 
                     # Draw pose using axes.
-                    cv.drawFrameAxes(img, camMtx, distCoeffs, rvec[i], tvec[i], markerSize * 0.7, 2)
+                    #cv.drawFrameAxes(img, camMtx, distCoeffs, rvec[i], tvec[i], markerSize * 0.7, 2)
                     # Draw distance in real time
+                    '''
                     cv.putText(
                         img,
                         f"Dist: {dist}",
@@ -240,16 +247,13 @@ if __name__ == "__main__":
                         cv.LINE_AA,
                     )
 
-                    '''                
+                     '''             
                     lcdMsg = f"Angle: {angle}\nDistance: {distance}"
                     print(lcdMsg)
-                    '''
+                    
 
             cv.imshow("Live Video", img)
-            interruptCounter += 1
-            if interruptCounter == 100:
-                interruptCounter = 0
-                write_data(angle, distance)
+            write_data(angle, distance)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
             # wait for 1ms
