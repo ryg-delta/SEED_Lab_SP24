@@ -272,9 +272,9 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 
 void Robot::scan(volatile bool& stopCondition) {
     // tunings
-    phiVelCtrl->SetTunings(2.5, 0, 0); //FIXME: tune
-    rhoVelCtrl->SetTunings(25, 0, 0);
-    rhoPosCtrl->SetTunings(35, 0, 0);
+    phiVelCtrl->SetTunings(1, 0, 0);
+    rhoVelCtrl->SetTunings(5, 0, 0);
+    rhoPosCtrl->SetTunings(5, 0, 0);
 
     maxPhiVel = radians(10);
     maxRhoVel = 1;
@@ -290,7 +290,7 @@ void Robot::scan(volatile bool& stopCondition) {
     rhoPosCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = pi;
+    phiVelDes = radians(60);
     phiVelAct = tracker->getPhiSpeedRpS();
     rhoPosDes = 0;
     rhoVelDes = 0;
@@ -313,6 +313,8 @@ void Robot::scan(volatile bool& stopCondition) {
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
     }
+
+    stop();
 
     // turn off control systems
     phiVelCtrl->SetMode(0);
