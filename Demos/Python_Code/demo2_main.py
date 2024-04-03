@@ -25,7 +25,7 @@ X_ORIGIN = WIDTH // 2
 Y_ORIGIN = HEIGHT // 2
 
 #ENSURE THIS IS ACCURATE
-markerSize = 138
+markerSize = 3.9 * 37.7952755906 # cm * factor
 
 #ARD_i2c = SMBus(1)
 #ARD_ADDR = 0x08
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
                     #dist = tvec[i][2]
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
-                    distance = pixToMeter(dist)
+                    distance = pixToMeter(dist) * 96 #Fudge Factor
                     angle = -angle_detect() + 3.15
 
                     topRight = corners[i][0][0]
