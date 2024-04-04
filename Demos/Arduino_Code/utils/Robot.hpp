@@ -275,7 +275,10 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 void Robot::scan(volatile bool& stopCondition) {
     while (!stopCondition) {
         turnInPlaceDeg(-45);
+        //Serial << stopCondition << endl;
         delay(400);
+        //turnInPlaceDeg(-45);
+        // Serial << stopCondition << endl;
     }
 
     tracker->zero();

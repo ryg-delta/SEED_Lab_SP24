@@ -6,29 +6,33 @@
 
 volatile bool targetAquired = false;
 
+volatile bool markerFound = false;
+
 double desiredAngleDeg;
 double desiredDistanceM;
 
 void recieveTargetISR(int howMany) {
-    // read offset (register address)
-    Wire.read(); 
+    if (!markerFound) {
+        // read offset (register address)
+        Wire.read(); 
 
-    // read angle and distance data
-    uint8_t angleHigh = Wire.read();
-    uint8_t angleLow = Wire.read();
-    uint8_t distanceHigh = Wire.read();
-    uint8_t distanceLow = Wire.read();
+        // read angle and distance data
+        uint8_t angleHigh = Wire.read();
+        uint8_t angleLow = Wire.read();
+        uint8_t distanceHigh = Wire.read();
+        uint8_t distanceLow = Wire.read();
 
-    // piece values together
-    double angleConverted = (angleHigh << 8) | (angleLow & 0xFF);
-    double distanceCM = (distanceHigh << 8) | (distanceLow & 0xFF);
-    
-    // convert to usable values for robot
-    desiredAngleDeg = FOV/2 - FOV*angleConverted/255;
-    desiredDistanceM = distanceCM / 100;
+        // piece values together
+        double angleConverted = (angleHigh << 8) | (angleLow & 0xFF);
+        double distanceCM = (distanceHigh << 8) | (distanceLow & 0xFF);
+        
+        // convert to usable values for robot
+        desiredAngleDeg = FOV/2 - FOV*angleConverted/255;
+        desiredDistanceM = distanceCM / 100;
 
-    // the marker has been spotted
-    targetAquired = true;
+        // the marker has been spotted
+        targetAquired = true;
+        
 }
 
 void setup() {

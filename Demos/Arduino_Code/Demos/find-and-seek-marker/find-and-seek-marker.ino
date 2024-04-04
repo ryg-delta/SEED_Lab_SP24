@@ -6,6 +6,7 @@
 #define I2CADDR 8
 #define FOV 60
 
+//volatile bool recieveI2C = true;
 volatile bool markerFound;
 volatile double distanceToMarker;
 volatile double angleToMarker;
@@ -14,6 +15,7 @@ double comfortableDistanceFromMarkerF = 0.75;
 
 // process the data from the pi
 void recieveTargetISR(int howMany) {
+//if (recieveI2C) {
     // read offset (register address)
     // Wire.read(); 
 
@@ -24,7 +26,7 @@ void recieveTargetISR(int howMany) {
     //uint8_t distanceLow = Wire.read();
 
     // piece values together
-   // double angleConverted = (angleHigh << 8) | (angleLow & 0xFF);
+// double angleConverted = (angleHigh << 8) | (angleLow & 0xFF);
     //double distanceCM = (distanceHigh << 8) | (distanceLow & 0xFF);
     
     // convert to usable values for robot
@@ -33,6 +35,7 @@ void recieveTargetISR(int howMany) {
 
     // the marker has been spotted
     markerFound = true;
+    //}
 }
 
 
@@ -60,6 +63,7 @@ void setup() {
     // wait for another data sample
     markerFound = false;
     while(!markerFound);
+    //recieveI2C = false;
 
     Serial << "Angle: " << angleToMarker << endl;
     Serial << "Distance: " << distanceToMarker << endl;
