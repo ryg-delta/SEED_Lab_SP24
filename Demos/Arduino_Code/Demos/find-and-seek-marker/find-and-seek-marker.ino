@@ -34,7 +34,9 @@ void recieveTargetISR(int howMany) {
     distanceToMarker = distanceCM / 100.0;
 
     // the marker has been spotted
-    markerFound = true;
+    if (distanceToMarker > 0.1) {
+        markerFound = true;
+    }
     //}
 }
 
@@ -62,7 +64,13 @@ void setup() {
 
     // wait for another data sample
     markerFound = false;
-    while(!markerFound);
+    int detectTime = millis();
+    while(!markerFound && (millis() - detectTime) < 200);
+    if (!markerFound) {
+        rob.turnInPlace(25);
+        while(!markerFound);
+    }
+    
     //recieveI2C = false;
 
     Serial << "Angle: " << angleToMarker << endl;
@@ -79,7 +87,7 @@ void setup() {
     Serial << "Doing a circle" << endl;
     rob.turnInPlaceDeg(-90);
     delay(2);
-    rob.driveInCircleF(comfortableDistanceFromMarkerF, 1.75);
+    rob.driveInCircleF(1.25, 1.75);
 
     Serial << "Done" << endl;
 

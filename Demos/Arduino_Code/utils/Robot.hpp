@@ -232,9 +232,11 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoVelAct = tracker->getRhoSpeedMpS();
     rhoPosAct = tracker->getRhoPosM();
     double error = phiPosDes - phiPosAct;
-
+    //Serial << "Entering turn in place" << endl;
     // loop
-    while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
+    int settledTimeCounter = 0;
+    while ((abs(error) > delta || abs(phiVelAct) > 0.05 || abs(rhoVelAct) > 0.05) && (settledTimeCounter < 1000)) {
+
         // update values
         tracker->update();
         phiVelAct = tracker->getPhiSpeedRpS();
@@ -254,8 +256,15 @@ void Robot::turnInPlace(double desAngleRad) {
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
 
         delay(1);
-    }
 
+        if (abs(error) < delta) {
+            settledTimeCounter++;
+        }
+        else {
+            settledTimeCounter = 0;
+        }
+    }
+    //Serial << "Turned in place" << endl;
     // turn off control systems
     phiVelCtrl->SetMode(0);
     phiPosCtrl->SetMode(0);
@@ -263,7 +272,9 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoPosCtrl->SetMode(0);
 
     // re-zero tracker
+    stop();
     tracker->zero();
+
 
     // TODO could maybe return some kind of indication of the final error.
 }
@@ -276,17 +287,16 @@ void Robot::scan(volatile bool& stopCondition) {
     while (!stopCondition) {
         turnInPlaceDeg(-45);
         //Serial << stopCondition << endl;
-        delay(400);
+        delay(1100);
         //turnInPlaceDeg(-45);
         // Serial << stopCondition << endl;
     }
-
     tracker->zero();
 }
 
 void Robot::scanContinuous(volatile bool& stopCondition) {
     // tunings
-    phiVelCtrl->SetTunings(1, 0, 0);
+    phiVelCtrl->SetTunings(0.01, 0.1, 0);
     rhoVelCtrl->SetTunings(5, 0, 0);
     rhoPosCtrl->SetTunings(5, 0, 0);
 
@@ -303,7 +313,7 @@ void Robot::scanContinuous(volatile bool& stopCondition) {
     rhoPosCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = radians(45);
+    phiVelDes = radians(10);
     phiVelAct = tracker->getPhiSpeedRpS();
     rhoPosDes = 0;
     rhoVelDes = 0;
@@ -311,7 +321,7 @@ void Robot::scanContinuous(volatile bool& stopCondition) {
     rhoPosAct = tracker->getRhoPosM();
     
     while (!stopCondition) {
-        // update values
+        //update values
         tracker->update();
         phiVelAct = tracker->getPhiSpeedRpS();
         rhoVelAct = tracker->getRhoSpeedMpS();
@@ -322,9 +332,11 @@ void Robot::scanContinuous(volatile bool& stopCondition) {
         rhoVelCtrl->Compute();
         // update voltages
         voltages.setVoltages(Vforward, Vrot);
-        // drive motor
+       // drive motor
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+        // motorDriver->setM1Speed(-70);
+        // motorDriver->setM2Speed(80);
     }
 
     stop();
