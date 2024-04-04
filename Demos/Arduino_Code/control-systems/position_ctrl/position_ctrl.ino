@@ -10,7 +10,9 @@
 #include <Arduino.h>
 #include "utils/Robot.hpp"
 #include <Streaming.h>
+#include <Wire.h>
 
+#define I2CADDR 8
 
 // test
 double startTimeS;
@@ -25,34 +27,36 @@ void setup() {
     Serial.begin(115200);
     while(!Serial);
 
+    Wire.begin(I2CADDR);
+
     // I named him rob
     Robot rob;
 
     Serial << "Beginning" << endl;
 
-    Serial << "Go forward" << endl;
-    rob.goForwardF(6);
+    Serial << "turn around" << endl;
+    rob.turnInPlaceDeg(30);
     Serial << "Done" << endl;
 
     delay(1000);
+
+    // Serial << "Go forward" << endl;
+    // rob.goForwardF(4);
+    // Serial << "Done" << endl;
+
+    // delay(1000);
 
     Serial << "turn around" << endl;
-    rob.turnInPlaceDeg(180);
+    rob.turnInPlaceDeg(-30);
     Serial << "Done" << endl;
 
     delay(1000);
 
-    Serial << "go back" << endl;
-    rob.goForwardF(6);
-    Serial << "Done" << endl;
-
-    delay(1000);
-
-    Serial << "Turn again" << endl;
-    rob.turnInPlaceDeg(-180);
+    volatile bool test = false;
+    rob.scan(test);
 
     // Serial << "Go in a circle" << endl;
-    // rob.driveInCircleF(3, 2);
+    // rob.driveInCircleF(1.1, 1.5);
 
     Serial << "Finished" << endl;
 

@@ -48,6 +48,8 @@ class Robot {
      */
     void scan(volatile bool& stopCondition);
 
+    void scanContinuous(volatile bool& stopCondition);
+
     /**
      * @brief Goes foreward in a straight line
      * 
@@ -198,9 +200,9 @@ Robot::~Robot() {
 }
 
 void Robot::turnInPlace(double desAngleRad) {
-    // tunings
+    // tuning
     phiVelCtrl->SetTunings(2.5, 0, 0);
-    phiPosCtrl->SetTunings(45, 0, 0.65);
+    phiPosCtrl->SetTunings(45, 0, 0.80);
     rhoVelCtrl->SetTunings(25, 0, 0);
     rhoPosCtrl->SetTunings(35, 0, 0);
 
@@ -212,7 +214,7 @@ void Robot::turnInPlace(double desAngleRad) {
     rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
 
-    double delta = radians(1);
+    double delta = radians(5);
 
     // turn on control systems
     phiVelCtrl->SetMode(AUTOMATIC);
@@ -271,12 +273,20 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 }
 
 void Robot::scan(volatile bool& stopCondition) {
+    while (!stopCondition) {
+        turnInPlaceDeg(-45);
+        delay(400);
+    }
+
+    tracker->zero();
+}
+
+void Robot::scanContinuous(volatile bool& stopCondition) {
     // tunings
     phiVelCtrl->SetTunings(1, 0, 0);
     rhoVelCtrl->SetTunings(5, 0, 0);
     rhoPosCtrl->SetTunings(5, 0, 0);
 
-    maxPhiVel = radians(10);
     maxRhoVel = 1;
 
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
@@ -290,7 +300,7 @@ void Robot::scan(volatile bool& stopCondition) {
     rhoPosCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = radians(60);
+    phiVelDes = radians(45);
     phiVelAct = tracker->getPhiSpeedRpS();
     rhoPosDes = 0;
     rhoVelDes = 0;
@@ -401,7 +411,7 @@ void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
 
      // tunings
     phiVelCtrl->SetTunings(5, 9, 0);
-    rhoVelCtrl->SetTunings(13, 15, 0);
+    rhoVelCtrl->SetTunings(35, 15, 0);
 
     // FIXME - what should delta be??? should velocitys have different deltas?
     double deltaPhiPos = DEG_TO_RAD*10;   

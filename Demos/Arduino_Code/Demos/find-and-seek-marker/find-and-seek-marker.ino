@@ -1,40 +1,57 @@
 #include <Arduino.h>
 #include "utils/Robot.hpp"
 #include <Streaming.h>
+#include <Wire.h>
 
-#define TIMER_INTERRUPT_DEBUG         2
-#define _TIMERINTERRUPT_LOGLEVEL_     0
-#define USE_TIMER_2     true
-#include "TimerInterrupt.h"
+#define I2CADDR 8
+#define FOV 60
 
-
-Robot rob;
 volatile bool markerFound;
 volatile double distanceToMarker;
 volatile double angleToMarker;
 double comfortableDistanceFromMarkerF = 0.75;
 
-void isr() {
+
+// process the data from the pi
+void recieveTargetISR(int howMany) {
+    // read offset (register address)
+    // Wire.read(); 
+
+    // read angle and distance data
+    uint8_t angleConverted = Wire.read();
+    //uint8_t angleLow = Wire.read();
+    uint8_t distanceCM = Wire.read();
+    //uint8_t distanceLow = Wire.read();
+
+    // piece values together
+   // double angleConverted = (angleHigh << 8) | (angleLow & 0xFF);
+    //double distanceCM = (distanceHigh << 8) | (distanceLow & 0xFF);
+    
+    // convert to usable values for robot
+    angleToMarker = FOV/2 - FOV*angleConverted/255;
+    distanceToMarker = distanceCM / 100.0;
+
+    // the marker has been spotted
     markerFound = true;
-    distanceToMarker = 1;
-    angleToMarker = 20;
 }
+
 
 void setup() {
     
+    // setup
     Serial.begin(115200);
 
-    ITimer2.init();
-    if (ITimer2.attachInterruptInterval(5000, isr, 0))
-    {
-        Serial.print(F("Starting  ITimer1 OK, millis() = ")); Serial.println(millis());
+    // setup i2c communication channel
+    Wire.begin(I2CADDR);
+    while (Wire.available()) {
+        Wire.read(); // clear out any garbage
     }
-    else {
-        Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
-    }
+    Wire.onReceive(recieveTargetISR);
 
-    rob.turnInPlaceDeg(90);
-    rob.turnInPlaceDeg(20);
+
+    // main routine
+
+    Robot rob;
 
     Serial << "Scanning for marker" << endl;
     rob.scan(markerFound);
@@ -43,6 +60,9 @@ void setup() {
     // wait for another data sample
     markerFound = false;
     while(!markerFound);
+
+    Serial << "Angle: " << angleToMarker << endl;
+    Serial << "Distance: " << distanceToMarker << endl;
 
     Serial << "Turning to face marker" << endl;
     rob.turnInPlaceDeg(angleToMarker);
