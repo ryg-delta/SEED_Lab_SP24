@@ -82,6 +82,7 @@ def arucoDetect(img):
     global detectedCenter
     aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     parameters = cv.aruco.DetectorParameters()
+    parameters.minMarkerPerimeterRate = 0.01
 
     detector = aruco.ArucoDetector(aruco_dict, parameters)
     corners, ids, rejected = detector.detectMarkers(img)
@@ -113,10 +114,6 @@ def printToLCD():
         if lcdMsg != currentMsg:
             lcd.clear()
             if detectedMarkers:
-                # print("Marker detected.")
-                # ******************************
-                # Write new data to the LCD here
-                # ******************************
                 lcd.message = lcdMsg
                 currentMsg = lcdMsg
             else:
@@ -127,24 +124,10 @@ def printToLCD():
     return
 
 
-def interrupt():
-
-    while True:
-        print("interrupt")
-
-        time.sleep(0.001)  # Sleep for 1 millisecond
-
 def angle_detect():
     # use similar triangles
     distanceFromCenter = detectedCenter[0] - X_ORIGIN
     # Convert from pixels to mm
-    '''
-    # Old math:
-    distanceFromCenter = distanceFromCenter*(KNOWN_MARKER_WIDTH/actualWidth)
-    angle = math.tan(distanceFromCenter/distance)
-    #Convert from radians
-    angle = angle *180/math.pi
-    '''
     angle = HFOV * (distanceFromCenter / (WIDTH))
     #print("distance from center: ", distanceFromCenter)
     return angle
@@ -157,12 +140,13 @@ def write_data(angle, distance):
     if detectedMarkers:
         angle_sent = (-angle+HFOV/2)*(255/HFOV)
         angle_sent = int(angle_sent)
-        distance = int(distance*100)
-        print(distance)
-        ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
-        print(angle_sent)
-        print(distance)
-        print("sent!")
+        distance = int(np.round(distance))
+        try:
+            ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
+            print(angle_sent)
+            print(distance)
+        except OSError:
+            print("Unable to write.")
 
 
 if __name__ == "__main__":
@@ -171,15 +155,14 @@ if __name__ == "__main__":
     
     # Initialise I2C bus.
     i2c = board.I2C()  # uses board.SCL and board.SDA
-    sleep(2)
+    sleep(1)
 
     # Initialise the LCD class
     lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
-    lcd.color = [0, 100, 100]
-
-    myThread = threading.Thread(target=printToLCD, args=())
-    myThread.start()
-    
+    lcd.color = [255, 0, 20]
+    lcd.message = "I DISLIKE\nMARKERS!!!!!!!!"
+    #myThread = threading.Thread(target=printToLCD, args=())
+    #myThread.start()
     
     ARD_i2c = SMBus(1)
     sleep(1)
@@ -196,7 +179,7 @@ if __name__ == "__main__":
     cv.destroyAllWindows()
     cv.imshow("Live Video", frame)
     detectedMarkers = False
-    interruptCounter = 0
+    
     # While loop for LIVE video
 
     while True:
@@ -210,52 +193,34 @@ if __name__ == "__main__":
             # Call aruco detector
             detectedMarkers, ids, corners = arucoDetect(img)
             rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
-
+            prevState = detectedMarkers
             # If aruco detected, find the corners
             if detectedMarkers == True:
+                if prevState != True:
+                    write_data(0, 0)
                 totalMarkers = range(0, ids.size)
                 for ids, corner, i in zip(corners, ids, totalMarkers):
                     rvec = np.array(rvec)
                     tvec = np.array(tvec)
 
-                    #dist = tvec[i][2]
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
                     distance = np.round(pixToMeter(dist),decimals=2) * 95
                     angle = -angle_detect() + 3.15
+          
+                    #lcdMsg = f"Angle: {angle}\nDistance: {distance}"
 
-                    topRight = corners[i][0][0]
-                    topRight = (int(topRight[0]), int(topRight[1]))
+                write_data(angle, distance)
 
-                    # Draw pose using axes.
-                    #cv.drawFrameAxes(img, camMtx, distCoeffs, rvec[i], tvec[i], markerSize * 0.7, 2)
-                    # Draw distance in real time
-                    '''
-                    cv.putText(
-                        img,
-                        f"Dist: {dist}",
-                        topRight,
-                        cv.FONT_HERSHEY_PLAIN,
-                        1.0,
-                        (0, 0, 255),
-                        2,
-                        cv.LINE_AA,
-                    )
 
-                     '''             
-                    lcdMsg = f"Angle: {angle}\nDistance: {distance}"
-                    print(lcdMsg)
-                    
-
-            cv.imshow("Live Video", img)
-            write_data(angle, distance)
+            #cv.imshow("Live Video", img)
+ 
+            
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
             # wait for 1ms
-            cv.waitKey(1)
-
+        
 
 print("Done Now!")
 vidCap.release()
-
 cv.destroyAllWindows()
 
