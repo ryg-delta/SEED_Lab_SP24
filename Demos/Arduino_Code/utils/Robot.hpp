@@ -65,6 +65,14 @@ class Robot {
     void goForwardF(double desDistanceFeet);
 
     /**
+     * @brief On marker lock, this method will go a marker in view
+     * 
+     * @param distanceM Distance to marker. This value can be constantly updated via ISR
+     * @param angleDeg Angle to makrer. This value can be constantly updated via ISR
+     */
+    void goToMarker(volatile double& distanceM, volatile double& angleDeg);
+
+    /**
      * @brief Drives the robot in a circle starting at its current heading
      * 
      * @param circleRadiusMeters The radius of the circle to drive in meters
@@ -422,13 +430,84 @@ void Robot::goForwardF(double desDistanceFeet) {
     goForwardM(desDistanceFeet / FEET_PER_MEETER);
 }
 
+void Robot::goToMarker(volatile double& distanceM, volatile double& angleDeg) {
+
+    // turn to face marker
+    turnInPlaceDeg(angleDeg);
+
+    // set up controls
+
+    // tunings
+    rhoVelCtrl->SetTunings(10, 0, 0);
+    rhoPosCtrl->SetTunings(25, 0, 0);
+    phiVelCtrl->SetTunings(2.5, 0, 0);
+    phiPosCtrl->SetTunings(40, 12, 0);
+
+    double maxRhoVel = 1.5;
+    double maxPhiVel = pi/2;  
+    double maxPhiAngle = 100 * DEG_TO_RAD;
+
+    rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoPosCtrl->SetOutputLimits(-maxRhoVel, maxRhoVel);
+    phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
+
+    double delta = 0.02;
+
+    // init
+    phiPosDes = angleDeg;
+    phiVelDes = 0;
+    phiVelAct = tracker->getPhiSpeedRpS();
+    phiPosAct = tracker->getPhiPosRad();
+    rhoPosDes = distanceM;
+    rhoVelDes = 0;
+    rhoVelAct = tracker->getRhoSpeedMpS();
+    rhoPosAct = tracker->getRhoPosM();
+    double error = rhoPosDes - rhoPosAct;
+
+    // turn on control systems
+    rhoVelCtrl->SetMode(AUTOMATIC);
+    rhoPosCtrl->SetMode(AUTOMATIC);
+    phiVelCtrl->SetMode(AUTOMATIC);
+    phiPosCtrl->SetMode(AUTOMATIC);
+
+    // loop
+    while (abs(error) > delta || abs(phiVelAct) > 0 || abs(rhoVelAct) > 0) {
+        // update values
+        tracker->update();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        rhoPosAct = tracker->getRhoPosM();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        phiPosAct = tracker->getPhiPosRad();
+        error = rhoPosDes - rhoPosAct;
+        // compute controller outputs
+        rhoPosCtrl->Compute();
+        rhoVelCtrl->Compute();
+        phiPosCtrl->Compute();
+        phiVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motors
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+
+    // turn off control systems
+    rhoVelCtrl->SetMode(0);
+    rhoPosCtrl->SetMode(0);
+    phiVelCtrl->SetMode(0);
+    phiPosCtrl->SetMode(0);
+
+    // re-zero tracker
+    tracker->zero();
+}
+
 void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
 
      // tunings
     phiVelCtrl->SetTunings(5, 9, 0);
     rhoVelCtrl->SetTunings(35, 15, 0);
 
-    // FIXME - what should delta be??? should velocitys have different deltas?
     double deltaPhiPos = DEG_TO_RAD*10;   
     double deltaRhoPos = 0.001;  // 1 mm
 
