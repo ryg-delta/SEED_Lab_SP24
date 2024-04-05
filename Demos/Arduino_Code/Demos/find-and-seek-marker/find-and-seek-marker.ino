@@ -30,8 +30,9 @@ void recieveTargetISR(int howMany) {
     //double distanceCM = (distanceHigh << 8) | (distanceLow & 0xFF);
     
     // convert to usable values for robot
-    angleToMarker = FOV/2 - FOV*angleConverted/255;
+    angleToMarker = FOV/2 - FOV*angleConverted/255 - 3;
     distanceToMarker = distanceCM / 100.0;
+    //distanceToMarker = distanceToMarker - comfortableDistanceFromMarkerF;
 
     // the marker has been spotted
     if (distanceToMarker > 0.1) {
@@ -64,12 +65,14 @@ void setup() {
 
     // wait for another data sample
     markerFound = false;
+    //while(!markerFound);
     int detectTime = millis();
-    while(!markerFound && (millis() - detectTime) < 200);
+    while(!markerFound && (millis() - detectTime) < 3000);
     if (!markerFound) {
-        rob.turnInPlace(25);
+        rob.turnInPlaceDeg(25);
         while(!markerFound);
     }
+
     
     //recieveI2C = false;
 
@@ -78,9 +81,12 @@ void setup() {
 
     Serial << "Turning to face marker" << endl;
     rob.turnInPlaceDeg(angleToMarker);
-
+    
     Serial << "Heading to marker" << endl;
+    
     double targetDistanceF = meters2feet(distanceToMarker) - comfortableDistanceFromMarkerF;
+    //double targetDistanceF = meters2feet(distanceToMarker) - 0.5;
+    
     rob.goForwardF(targetDistanceF);
     Serial << "Made it to marker" << endl;
 
