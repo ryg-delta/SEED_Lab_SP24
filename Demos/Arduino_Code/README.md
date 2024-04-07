@@ -11,6 +11,11 @@ The libs folder stores C++ libraries from outside sources.
 ### testing
 Contains tests for arduino subsystems.
 
+### control-systems
+Contains code used to test individual robot commands.
+
+### Demos
+Contains code used in Demos.
 
 ## dependencies
 Arduino libraries used

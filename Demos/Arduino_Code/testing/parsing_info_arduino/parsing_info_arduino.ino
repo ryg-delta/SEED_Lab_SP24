@@ -32,7 +32,7 @@ void recieveTargetISR(int howMany) {
 
         // the marker has been spotted
         targetAquired = true;
-        
+    }  
 }
 
 void setup() {
