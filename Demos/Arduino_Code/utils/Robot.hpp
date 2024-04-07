@@ -375,7 +375,7 @@ void Robot::goForwardM(double desDistanceMeters) {
     phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
     phiPosCtrl->SetOutputLimits(-maxPhiVel, maxPhiVel);
 
-    double delta = 0.02;  // 1 mm
+    double delta = 0.05;  // 1 mm
 
     // init
     phiPosDes = 0;
