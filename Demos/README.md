@@ -1,4 +1,4 @@
-# Demo 1 Overview
+# Demo Overview
 
 ## Localization and Control
 - Goal: Move robot a set amount of feed and rotate robot by a specified amount of degrees.
