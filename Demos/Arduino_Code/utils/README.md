@@ -3,6 +3,10 @@ utils contains functions, classes, headers, etc. written by our team for use on 
 
 ## Files
 For more documentation about each file. See the file header block.
+- Robot.hpp
+  - Type: Class
+  - Use: Controls all of the robot's interfaces through simple commands.
+
 - robotConstants.h
   - Type: header
   - Use: Define physical constants used for the robot.

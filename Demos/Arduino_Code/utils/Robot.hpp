@@ -1,7 +1,8 @@
 /**
  * @file Robot.h
  * @author Blake Billharz, Ben Sprik
- * @brief Implement control systems for discrete movement commands.
+ * @brief This class implements all necessary interfaces to control the robot based on discrete movement commands.
+ *        A list of commands can be seen below in the class declaration.
  * @version 0.1
  * @date 2024-03-02
  * 
@@ -42,12 +43,17 @@ class Robot {
     void turnInPlaceDeg(double desAngleDeg);
 
     /**
-     * @brief Turn slowly until stopCondition is met (becomes true)
+     * @brief Turns in increments, pausing for a second between turns, until stopCondition is met (becomes true)
      * 
      * @param stopCondition 
      */
     void scan(volatile bool& stopCondition);
 
+    /**
+     * @brief Turn slowly until stopCondition is met (becomes true)
+     * 
+     * @param stopCondition 
+     */
     void scanContinuous(volatile bool& stopCondition);
 
     /**
