@@ -56,6 +56,8 @@ class Robot {
      */
     void scanContinuous(volatile bool& stopCondition);
 
+    void scanInCircle(volatile bool& stopCondition);
+
     /**
      * @brief Goes foreward in a straight line
      * 
@@ -306,6 +308,9 @@ void Robot::scan(volatile bool& stopCondition) {
         // Serial << stopCondition << endl;
     }
     tracker->zero();
+
+    stopCondition = false;
+    while(!stopCondition);
 }
 
 void Robot::scanContinuous(volatile bool& stopCondition) {
@@ -562,6 +567,58 @@ void Robot::driveInCircleM(double circleRadiusMeters, double forwardSpeed) {
 
 void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
     driveInCircleM(circleRadiusFeet / FEET_PER_MEETER, forwardSpeed / FEET_PER_MEETER);
+}
+
+void Robot::scanInCircle(volatile bool& stopCondition) {
+    const double RADIUS_M = (8/12) / FEET_PER_MEETER;
+    const double ANGULAR_SPEED_RADPS = radians(20);
+
+    // tunings
+    phiVelCtrl->SetTunings(5, 9, 0);
+    rhoVelCtrl->SetTunings(15, 15, 0);
+
+    double deltaPhiPos = DEG_TO_RAD*10;   
+
+    phiVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    rhoVelCtrl->SetOutputLimits(-MAX_VOLTAGE, MAX_VOLTAGE);
+    
+    // turn on control systems
+    phiVelCtrl->SetMode(AUTOMATIC);
+    rhoVelCtrl->SetMode(AUTOMATIC);
+
+    // init
+    phiVelDes = ANGULAR_SPEED_RADPS;
+    phiVelAct = tracker->getPhiSpeedRpS();
+    phiPosAct = tracker->getPhiPosRad();
+    rhoVelDes = ANGULAR_SPEED_RADPS * RADIUS_M;
+    rhoVelAct = tracker->getRhoSpeedMpS();
+    rhoPosAct = tracker->getRhoPosM();
+    
+    // start the robot
+    while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
+        // update values
+        tracker->update();
+        rhoVelAct = tracker->getRhoSpeedMpS();
+        rhoPosAct = tracker->getRhoPosM();
+        phiVelAct = tracker->getPhiSpeedRpS();
+        phiPosAct = tracker->getPhiPosRad();
+        // compute controller outputs
+        rhoVelCtrl->Compute();
+        phiVelCtrl->Compute();
+        // update voltages
+        voltages.setVoltages(Vforward, Vrot);
+        // drive motors
+        motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+        motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    }
+    
+     // turn off control systems
+    rhoVelCtrl->SetMode(0);
+    phiVelCtrl->SetMode(0);
+
+     // stop the robot where it is
+    tracker->zero();
+    stop();
 }
 
 void Robot::stop() {

@@ -64,8 +64,6 @@ void setup() {
    // Serial << "Marker found" << endl;
 
     // wait for another data sample
-    markerFound = false;
-    while(!markerFound);
     // int detectTime = millis();
     // while(!markerFound && (millis() - detectTime) < 3000);
     // if (!markerFound) {
@@ -84,9 +82,7 @@ void setup() {
     
     //Serial << "Heading to marker" << endl;
     
-    double targetDistanceF = meters2feet(distanceToMarker) - comfortableDistanceFromMarkerF;
-    //double targetDistanceF = meters2feet(distanceToMarker) - 0.5;
-    
+    double targetDistanceF = meters2feet(distanceToMarker) - comfortableDistanceFromMarkerF;    
     rob.goForwardF(targetDistanceF);
     //Serial << "Made it to marker" << endl;
 
