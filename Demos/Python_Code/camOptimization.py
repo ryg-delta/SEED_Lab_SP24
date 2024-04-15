@@ -44,6 +44,12 @@ def initializeCamera():
     camera = cv.VideoCapture(0)
     camera.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
     camera.set(cv.CAP_PROP_FRAME_HEIGHT, HEIGHT)
+    camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)
+    camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+    camera.set(cv.CAP_PROP_BRIGHTNESS, 250)
+    camera.set(cv.CAP_PROP_EXPOSURE, 39)
+    camera.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    camera.set(cv.CAP_PROP_FPS, 120)
     return camera
 
 
@@ -138,7 +144,7 @@ while True:
                 dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
                 distance = np.round(pixToMeter(dist), decimals=2) * 95
                 angle = -angle_detect() + 3.15
-
+                print("we got marker")
                 # lcdMsg = f"Angle: {angle}\nDistance: {distance}"
 
 
