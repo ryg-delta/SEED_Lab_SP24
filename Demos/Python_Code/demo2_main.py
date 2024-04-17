@@ -26,7 +26,7 @@ X_ORIGIN = WIDTH // 2
 Y_ORIGIN = HEIGHT // 2
 
 #ENSURE THIS IS ACCURATE
-markerSize = 5.2 * 37.7952755906 # cm * factor
+markerSize = 3.8 * 37.7952755906 # cm * factor
 
 ARD_ADDR = 0x08
 HFOV = 60  # deg
@@ -73,6 +73,12 @@ def initializeCamera():
     camera = cv.VideoCapture(0)
     camera.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
     camera.set(cv.CAP_PROP_FRAME_HEIGHT, HEIGHT)
+    camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)
+    camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+    camera.set(cv.CAP_PROP_BRIGHTNESS, 250)
+    camera.set(cv.CAP_PROP_EXPOSURE, 39)
+    camera.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    camera.set(cv.CAP_PROP_FPS, 120)
     return camera
 
 
@@ -147,7 +153,10 @@ def write_data(angle, distance):
             print(distance)
         except OSError:
             print("Unable to write.")
+<<<<<<< HEAD
+=======
 
+>>>>>>> 6c2d1d17037a44bf072fadbb06a9398d38963364
 
 if __name__ == "__main__":
     lcdColumns = 16
@@ -186,6 +195,7 @@ if __name__ == "__main__":
         # Read in camera data
         ret, img = vidCap.read()
         img = cv.undistort(img, camMtx, distCoeffs)
+        
         # If the image is good
         frames = []
         imgCount = 0
@@ -212,7 +222,11 @@ if __name__ == "__main__":
                 write_data(angle, distance)
 
 
+<<<<<<< HEAD
+            cv.imshow("Live Video", img)
+=======
             #cv.imshow("Live Video", img)
+>>>>>>> 6c2d1d17037a44bf072fadbb06a9398d38963364
  
             
             if cv.waitKey(1) & 0xFF == ord('q'):
