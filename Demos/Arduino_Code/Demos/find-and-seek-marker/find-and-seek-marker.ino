@@ -59,9 +59,9 @@ void setup() {
 
     Robot rob;
 
-   // Serial << "Scanning for marker" << endl;
-    //rob.scan(markerFound);
-   // Serial << "Marker found" << endl;
+    Serial << "Scanning for marker" << endl;
+    rob.scanInCircle(markerFound);
+    Serial << "Marker found" << endl;
 
     // wait for another data sample
     // int detectTime = millis();

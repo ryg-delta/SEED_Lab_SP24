@@ -570,12 +570,15 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 }
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
-    const double RADIUS_M = (8/12) / FEET_PER_MEETER;
+    const double RADIUS_M = (10.0/12.0) / FEET_PER_MEETER;
     const double ANGULAR_SPEED_RADPS = radians(20);
 
     // tunings
-    phiVelCtrl->SetTunings(5, 9, 0);
-    rhoVelCtrl->SetTunings(15, 15, 0);
+    // phiVelCtrl->SetTunings(4, 0, 0);
+    // rhoVelCtrl->SetTunings(35, 0.5, 0);
+    phiVelCtrl->SetTunings(3, 0, 0);
+    rhoVelCtrl->SetTunings(35, 15, 0);
+   
 
     double deltaPhiPos = DEG_TO_RAD*10;   
 
@@ -610,6 +613,9 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
         // drive motors
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+
+        Serial << rhoVelAct << " " << rhoVelDes << " " << phiVelAct << " " << phiVelDes << endl;
+        delay(1);
     }
     
      // turn off control systems

@@ -34,26 +34,14 @@ void setup() {
 
     Serial << "Beginning" << endl;
 
-    Serial << "turn around" << endl;
-    rob.turnInPlaceDeg(30);
-    Serial << "Done" << endl;
-
-    delay(1000);
-
-    // Serial << "Go forward" << endl;
-    // rob.goForwardF(4);
-    // Serial << "Done" << endl;
-
-    // delay(1000);
-
-    Serial << "turn around" << endl;
-    rob.turnInPlaceDeg(-30);
-    Serial << "Done" << endl;
-
-    delay(1000);
-
+    Serial << "Scanning turn in cirlce" << endl;
     volatile bool test = false;
-    rob.scan(test);
+    rob.scanInCircle(test);
+    Serial << "Done" << endl;
+
+    delay(1000);
+
+
 
     // Serial << "Go in a circle" << endl;
     // rob.driveInCircleF(1.1, 1.5);
