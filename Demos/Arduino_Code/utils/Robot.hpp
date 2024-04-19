@@ -571,7 +571,7 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
     double circleRadiusMeters = 0.3048;  // 1 ft
-    double angularSpeed = radians(20);
+    double angularSpeed = radians(60);
 
      // tunings
     phiVelCtrl->SetTunings(3, 10, 0);
@@ -596,7 +596,8 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     rhoPosAct = tracker->getRhoPosM();
     
     // start the robot
-    while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
+    // while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
+    while (!stopCondition) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();

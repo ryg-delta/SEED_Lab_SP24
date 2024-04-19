@@ -39,10 +39,9 @@ void recieveTargetISR(int howMany) {
     // convert to usable values for robot
     angleToMarker = FOV/2 - FOV*angleConverted/255 - 3;
     distanceToMarker = distanceCM / 100.0;
-    //distanceToMarker = distanceToMarker - comfortableDistanceFromMarkerF;
 
     // the marker has been spotted
-    if (distanceToMarker > 0.1) {
+    if (distanceToMarker > 0.254) {
         markerFound = true;
     }
     //}
@@ -61,7 +60,7 @@ void setup() {
     }
     Wire.onReceive(recieveTargetISR);
 
-    comfortableDistanceFromMarker = 0.666666667 / FEET_PER_MEETER;
+    comfortableDistanceFromMarker = 0.2032;
 
 
     // main routine
@@ -70,16 +69,21 @@ void setup() {
 
     // scan for first marker
     rob.scan(markerFound);
+    calcTarget();
+    Serial << "Distance to marker: " << distanceToMarker << endl;
+    Serial << "Angle to marker: " << angleToMarker << endl;
+    Serial << "Distance to target: " << distanceToTarget << endl;
+    Serial << "Angle to target: " << angleToTarget << endl;
 
     // go to marker
-    rob.turnInPlaceDeg(angleToMarker);
-    double targetDistance = distanceToMarker - comfortableDistanceFromMarker;    
-    rob.goForwardM(targetDistance);
+    // rob.turnInPlaceDeg(angleToMarker);
+    // double targetDistance = distanceToMarker - comfortableDistanceFromMarker;    
+    // rob.goForwardM(targetDistance);
 
     // find second marker
-    rob.turnInPlaceDeg(30);
-    rob.scan(markerFound);
-    calcTarget();
+    // rob.turnInPlaceDeg(-60);
+    // rob.scan(markerFound);
+    // calcTarget();
        
     // go to second marker
     rob.turnInPlaceDeg(angleToTarget);
@@ -88,21 +92,21 @@ void setup() {
 
 
     // continue to seek markers until a circle is complete
-    for (int i = 0; i < NUM_MARKERS - 1; i++) {
+    // for (int i = 0; i < NUM_MARKERS - 1; i++) {
 
-        // find next marker
-        markerFound = false;
-        rob.scanInCircle(markerFound);
+    //     // find next marker
+    //     markerFound = false;
+    //     rob.scanInCircle(markerFound);
         
-        // calculate where to go
-        calcTarget();
+    //     // calculate where to go
+    //     calcTarget();
 
-        // go to next marker
-        rob.turnInPlaceDeg(angleToTarget);
-        rob.goForwardM(distanceToTarget);
-        rob.turnInPlaceDeg(adjustmentAngle);
+    //     // go to next marker
+    //     rob.turnInPlaceDeg(angleToTarget);
+    //     rob.goForwardM(distanceToTarget);
+    //     rob.turnInPlaceDeg(adjustmentAngle);
 
-    }
+    // }
 
 }
 
@@ -112,7 +116,6 @@ void loop() {
 
 
 void calcTarget() {
-    angleToTarget = degrees(atan2(comfortableDistanceFromMarker, distanceToMarker));
-    adjustmentAngle = angleToTarget - angleToMarker;
-    distanceToTarget = sqrt( sq(comfortableDistanceFromMarker) * sq(distanceToMarker) );
+    angleToTarget = degrees(-atan2(comfortableDistanceFromMarker, distanceToMarker)) + angleToMarker;
+    distanceToTarget = sqrt( sq(comfortableDistanceFromMarker) + sq(distanceToMarker) );
 }
