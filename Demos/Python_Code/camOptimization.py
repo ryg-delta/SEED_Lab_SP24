@@ -48,7 +48,7 @@ def initializeCamera():
     camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     camera.set(cv.CAP_PROP_BRIGHTNESS, 250)
     camera.set(cv.CAP_PROP_EXPOSURE, 39)
-    camera.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    camera.set(cv.CAP_PROP_BUFFERSIZE, 10)
     camera.set(cv.CAP_PROP_FPS, 120)
     return camera
 
@@ -130,13 +130,15 @@ while True:
     frames = []
     imgCount = 0
     if ret:
+        t0 = time.process_time()
         # Call aruco detector
         detectedMarkers, ids, corners = arucoDetect(img)
-        rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
         prevState = detectedMarkers
         # If aruco detected, find the corners
         if detectedMarkers == True:
+            rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
             totalMarkers = range(0, ids.size)
+            
             for ids, corner, i in zip(corners, ids, totalMarkers):
                 rvec = np.array(rvec)
                 tvec = np.array(tvec)
@@ -149,6 +151,8 @@ while True:
 
 
         cv.imshow("Live Video", img)
+        t1 = time.process_time()
+        print(t1-t0)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
         # wait for 1ms

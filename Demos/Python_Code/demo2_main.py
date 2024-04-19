@@ -7,7 +7,7 @@
 # Description:
 # Runs pose estimation video feed. DEPENDENT ON MARKER SIZE FOR ACCURACY
 # References:
-# To do:
+# To do: Add find closest marker function
 
 import cv2 as cv
 from cv2 import aruco
@@ -17,7 +17,7 @@ import board
 import threading
 import time
 from smbus2 import SMBus
-import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
+
 
 HEIGHT = 480
 WIDTH = 640
@@ -32,7 +32,7 @@ ARD_ADDR = 0x08
 HFOV = 60  # deg
 
 # Flags and other global variables
-lcdMsg = "No markers\ndetected."
+
 detectedMarkers = False
 
 detectedHeight = 0
@@ -109,27 +109,6 @@ def arucoDetect(img):
     return detectedMarkers, ids, corners
 
 
-# Prints to LCD a message based on the detected_marker flag.
-# Runs parallel to main (threading)
-
-def printToLCD():
-    global lcdMsg
-    global detectedMarkers
-    currentMsg = ""
-    while True:
-        if lcdMsg != currentMsg:
-            lcd.clear()
-            if detectedMarkers:
-                lcd.message = lcdMsg
-                currentMsg = lcdMsg
-            else:
-                # print("No markers found.")
-                lcd.message = "No markers\ndetected."
-                currentMsg = "No markers\ndetected."
-        sleep(0.1)
-    return
-
-
 def angle_detect():
     # use similar triangles
     distanceFromCenter = detectedCenter[0] - X_ORIGIN
@@ -142,6 +121,11 @@ def pixToMeter(pix):
     meters = pix * 0.0002645833
     return meters
 
+def find_closest(distance):
+    closest = np.min(distance)
+    closest_idx = np.where(distance==closest[0][0])
+    return closest
+
 def write_data(angle, distance):
     if detectedMarkers:
         angle_sent = (-angle+HFOV/2)*(255/HFOV)
@@ -153,25 +137,8 @@ def write_data(angle, distance):
             print(distance)
         except OSError:
             print("Unable to write.")
-<<<<<<< HEAD
-=======
-
->>>>>>> 6c2d1d17037a44bf072fadbb06a9398d38963364
 
 if __name__ == "__main__":
-    lcdColumns = 16
-    lcdRows = 2
-    
-    # Initialise I2C bus.
-    i2c = board.I2C()  # uses board.SCL and board.SDA
-    sleep(1)
-
-    # Initialise the LCD class
-    lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcdColumns, lcdRows)
-    lcd.color = [255, 0, 20]
-    lcd.message = "I DISLIKE\nMARKERS!!!!!!!!"
-    #myThread = threading.Thread(target=printToLCD, args=())
-    #myThread.start()
     
     ARD_i2c = SMBus(1)
     sleep(1)
@@ -204,6 +171,7 @@ if __name__ == "__main__":
             detectedMarkers, ids, corners = arucoDetect(img)
             rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
             prevState = detectedMarkers
+            distance = np.empty(6)
             # If aruco detected, find the corners
             if detectedMarkers == True:
                 if prevState != True:
@@ -214,19 +182,15 @@ if __name__ == "__main__":
                     tvec = np.array(tvec)
 
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
-                    distance = np.round(pixToMeter(dist),decimals=2) * 95
+                    calcDistance = np.round(pixToMeter(dist),decimals=2) * 95
+                    distance[i] = calcDistance
                     angle = -angle_detect() + 3.15
-          
-                    #lcdMsg = f"Angle: {angle}\nDistance: {distance}"
 
-                write_data(angle, distance)
+                sendDistance = find_closest(distance)
+                write_data(angle, sendDistance)
 
-
-<<<<<<< HEAD
-            cv.imshow("Live Video", img)
-=======
             #cv.imshow("Live Video", img)
->>>>>>> 6c2d1d17037a44bf072fadbb06a9398d38963364
+
  
             
             if cv.waitKey(1) & 0xFF == ord('q'):
