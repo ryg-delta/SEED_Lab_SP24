@@ -301,7 +301,7 @@ void Robot::turnInPlaceDeg(double desAngleDeg) {
 
 void Robot::scan(volatile bool& stopCondition) {
     while (!stopCondition) {
-        turnInPlaceDeg(-45);
+        turnInPlaceDeg(45);
         //Serial << stopCondition << endl;
         delay(1100);
         //turnInPlaceDeg(-45);
@@ -571,7 +571,7 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
     double circleRadiusMeters = 0.3048;  // 1 ft
-    double angularSpeed = radians(60);
+    double angularSpeed = radians(45);
 
      // tunings
     phiVelCtrl->SetTunings(3, 10, 0);
@@ -597,7 +597,7 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     
     // start the robot
     // while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
-    while (!stopCondition) {
+    while (!stopCondition && abs(phiPosAct) < pi/2) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
@@ -622,6 +622,10 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     tracker->zero();
     stop();
 
+    // stop robot and wait for stable distance targets
+    delay(300);
+    stopCondition = false;
+    while (!stopCondition);
 }
 
 void Robot::stop() {

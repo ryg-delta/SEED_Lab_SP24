@@ -20,9 +20,8 @@ volatile double distanceToMarker;
 volatile double angleToMarker;
 double distanceToTarget;
 double angleToTarget;
-double adjustmentAngle;
 double comfortableDistanceFromMarker;
-const int NUM_MARKERS = 6;
+const int NUM_MARKERS = 4;
 
 // calculates the move target based on the marker telemetry
 void calcTarget();
@@ -68,6 +67,7 @@ void setup() {
     Robot rob;
 
     // scan for first marker
+    markerFound = false;
     rob.scan(markerFound);
     calcTarget();
     Serial << "Distance to marker: " << distanceToMarker << endl;
@@ -76,37 +76,37 @@ void setup() {
     Serial << "Angle to target: " << angleToTarget << endl;
 
     // go to marker
-    // rob.turnInPlaceDeg(angleToMarker);
-    // double targetDistance = distanceToMarker - comfortableDistanceFromMarker;    
-    // rob.goForwardM(targetDistance);
+    rob.turnInPlaceDeg(angleToMarker);
+    double targetDistance = distanceToMarker - comfortableDistanceFromMarker;    
+    rob.goForwardM(targetDistance);
 
     // find second marker
-    // rob.turnInPlaceDeg(-60);
-    // rob.scan(markerFound);
-    // calcTarget();
+    rob.turnInPlaceDeg(-90);
+    markerFound = false;
+    delay(100);
+    rob.scan(markerFound);
+    calcTarget();
        
     // go to second marker
     rob.turnInPlaceDeg(angleToTarget);
     rob.goForwardM(distanceToTarget);
-    rob.turnInPlaceDeg(adjustmentAngle);
 
 
     // continue to seek markers until a circle is complete
-    // for (int i = 0; i < NUM_MARKERS - 1; i++) {
+    for (int i = 1; i < NUM_MARKERS - 1; i++) {
 
-    //     // find next marker
-    //     markerFound = false;
-    //     rob.scanInCircle(markerFound);
+        // find next marker
+        markerFound = false;
+        rob.scanInCircle(markerFound);
         
-    //     // calculate where to go
-    //     calcTarget();
+        // calculate where to go
+        calcTarget();
 
-    //     // go to next marker
-    //     rob.turnInPlaceDeg(angleToTarget);
-    //     rob.goForwardM(distanceToTarget);
-    //     rob.turnInPlaceDeg(adjustmentAngle);
+        // go to next marker
+        rob.turnInPlaceDeg(angleToTarget);
+        rob.goForwardM(distanceToTarget);
 
-    // }
+    }
 
 }
 
