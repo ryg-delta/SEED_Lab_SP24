@@ -570,13 +570,13 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 }
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
-    const double RADIUS_M = (10.0/12.0) / FEET_PER_MEETER;
+    const double RADIUS_M = (11.0/12.0) / FEET_PER_MEETER;
     const double ANGULAR_SPEED_RADPS = radians(20);
 
     // tunings
     // phiVelCtrl->SetTunings(4, 0, 0);
     // rhoVelCtrl->SetTunings(35, 0.5, 0);
-    phiVelCtrl->SetTunings(3, 0, 0);
+    phiVelCtrl->SetTunings(5, 9, 0);
     rhoVelCtrl->SetTunings(35, 15, 0);
    
 
@@ -590,10 +590,18 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     rhoVelCtrl->SetMode(AUTOMATIC);
 
     // init
-    phiVelDes = ANGULAR_SPEED_RADPS;
+    // phiVelDes = ANGULAR_SPEED_RADPS;
+    // phiVelAct = tracker->getPhiSpeedRpS();
+    // phiPosAct = tracker->getPhiPosRad();
+    // rhoVelDes = ANGULAR_SPEED_RADPS * RADIUS_M;
+    // rhoVelAct = tracker->getRhoSpeedMpS();
+    // rhoPosAct = tracker->getRhoPosM();
+    double circleRadiusMeters = 1 / FEET_PER_MEETER;
+    double forwardSpeed = 0.4 / FEET_PER_MEETER;
+    phiVelDes = forwardSpeed / circleRadiusMeters;
     phiVelAct = tracker->getPhiSpeedRpS();
     phiPosAct = tracker->getPhiPosRad();
-    rhoVelDes = ANGULAR_SPEED_RADPS * RADIUS_M;
+    rhoVelDes = forwardSpeed;
     rhoVelAct = tracker->getRhoSpeedMpS();
     rhoPosAct = tracker->getRhoPosM();
     
@@ -614,8 +622,8 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
 
-        Serial << rhoVelAct << " " << rhoVelDes << " " << phiVelAct << " " << phiVelDes << endl;
-        delay(1);
+        //Serial << rhoVelAct << " " << rhoVelDes << " " << phiVelAct << " " << phiVelDes << endl;
+        //delay(1);
     }
     
      // turn off control systems
