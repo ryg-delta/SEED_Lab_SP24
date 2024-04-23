@@ -26,7 +26,6 @@ const int NUM_MARKERS = 4;
 // calculates the move target based on the marker telemetry
 void calcTarget();
 
-
 // process the data from the pi
 void recieveTargetISR(int howMany) {
 
@@ -40,7 +39,7 @@ void recieveTargetISR(int howMany) {
     distanceToMarker = distanceCM / 100.0;
 
     // the marker has been spotted
-    if (distanceToMarker > 0.254) {
+    if (distanceToMarker > 0.254 && distanceToMarker < 3) {
         markerFound = true;
     }
     //}

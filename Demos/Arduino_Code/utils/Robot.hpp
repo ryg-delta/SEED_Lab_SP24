@@ -56,7 +56,20 @@ class Robot {
      */
     void scanContinuous(volatile bool& stopCondition);
 
+    /**
+     * @brief Drive in a circle to scan
+     * 
+     * @param stopCondition 
+     */
     void scanInCircle(volatile bool& stopCondition);
+
+    /**
+     * @brief Finds and goes to the closest marker
+     * 
+     * @param markerSeen 
+     * @param distanceToMarker 
+     */
+    void findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker);
 
     /**
      * @brief Goes foreward in a straight line
@@ -626,6 +639,25 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     delay(300);
     stopCondition = false;
     while (!stopCondition);
+}
+
+void Robot::findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker) {
+
+    // setup
+    const int iterationAngle = 30;
+    const int numIterations = 360 / iterationAngle;
+    double smallestDistance = 100;
+
+    // spin in a circle, finding the smallest distance
+    for (int i = 0; i < numIterations; i++) {
+        turnInPlaceDeg(iterationAngle);
+        markerSeen = false;
+        delay(100);
+        if (markerSeen && distanceToMarker < smallestDistance) {
+            smallestDistance = distanceToMarker;
+        }
+    }
+
 }
 
 void Robot::stop() {
