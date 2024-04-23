@@ -69,7 +69,7 @@ class Robot {
      * @param markerSeen 
      * @param distanceToMarker 
      */
-    void findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker);
+    void findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker, volatile double& angleToMarker);
 
     /**
      * @brief Goes foreward in a straight line
@@ -137,6 +137,9 @@ class Robot {
     // control systems //
 
     int controllerSampleTimeMs = 10;
+
+    // delay between rotations when scanning in place
+    const int scanDelay = 1100;
     
 
     // phi velocity control system
@@ -316,7 +319,7 @@ void Robot::scan(volatile bool& stopCondition) {
     while (!stopCondition) {
         turnInPlaceDeg(45);
         //Serial << stopCondition << endl;
-        delay(1100);
+        delay(scanDelay);
         //turnInPlaceDeg(-45);
         // Serial << stopCondition << endl;
     }
@@ -641,20 +644,32 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     while (!stopCondition);
 }
 
-void Robot::findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker) {
+void Robot::findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker, volatile double& angleToMarker) {
 
     // setup
     const int iterationAngle = 30;
     const int numIterations = 360 / iterationAngle;
     double smallestDistance = 100;
+    double distanceDelata_M = 0.1;
 
     // spin in a circle, finding the smallest distance
     for (int i = 0; i < numIterations; i++) {
         turnInPlaceDeg(iterationAngle);
         markerSeen = false;
-        delay(100);
+        delay(scanDelay);
         if (markerSeen && distanceToMarker < smallestDistance) {
             smallestDistance = distanceToMarker;
+        }
+    }
+
+    for (int i = 0; i < numIterations; i++) {
+        turnInPlaceDeg(iterationAngle);
+        markerSeen = false;
+        delay(scanDelay);
+        if (markerSeen && abs(distanceToMarker - smallestDistance) < distanceDelata_M) {
+            turnInPlaceDeg(angleToMarker);
+            goForwardM(distanceToMarker - 0.2032); // stop 8 inches away from marker
+            break;
         }
     }
 

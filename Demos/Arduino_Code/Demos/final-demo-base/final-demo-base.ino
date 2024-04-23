@@ -65,19 +65,8 @@ void setup() {
 
     Robot rob;
 
-    // scan for first marker
-    markerFound = false;
-    rob.scan(markerFound);
-    calcTarget();
-    Serial << "Distance to marker: " << distanceToMarker << endl;
-    Serial << "Angle to marker: " << angleToMarker << endl;
-    Serial << "Distance to target: " << distanceToTarget << endl;
-    Serial << "Angle to target: " << angleToTarget << endl;
-
-    // go to marker
-    rob.turnInPlaceDeg(angleToMarker);
-    double targetDistance = distanceToMarker - comfortableDistanceFromMarker;    
-    rob.goForwardM(targetDistance);
+    // find closest marker and go to it
+    rob.findClosestMarker(markerFound, distanceToMarker, angleToMarker);
 
     // find second marker
     rob.turnInPlaceDeg(-90);
