@@ -21,7 +21,7 @@ volatile double angleToMarker;
 double distanceToTarget;
 double angleToTarget;
 double comfortableDistanceFromMarker;
-const int NUM_MARKERS = 4;
+const int NUM_MARKERS = 7;
 
 // calculates the move target based on the marker telemetry
 void calcTarget();
@@ -66,7 +66,7 @@ void setup() {
     Robot rob;
 
     // find closest marker and go to it
-    rob.findClosestMarker(markerFound, distanceToMarker, angleToMarker);
+    rob.findMarker4ft(markerFound, distanceToMarker, angleToMarker);
 
     // find second marker
     rob.turnInPlaceDeg(-90);

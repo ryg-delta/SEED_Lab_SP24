@@ -68,8 +68,18 @@ class Robot {
      * 
      * @param markerSeen 
      * @param distanceToMarker 
+     * @param angleToMarker
      */
     void findClosestMarker(volatile bool& markerSeen, volatile double& distanceToMarker, volatile double& angleToMarker);
+
+     /**
+     * @brief Finds and goes to marker 4 ft away
+     * 
+     * @param markerSeen 
+     * @param distanceToMarker 
+     * @param angleToMarker
+     */
+    void findMarker4ft(volatile bool& markerSeen, volatile double& distanceToMarker, volatile double& angleToMarker);
 
     /**
      * @brief Goes foreward in a straight line
@@ -139,7 +149,7 @@ class Robot {
     int controllerSampleTimeMs = 10;
 
     // delay between rotations when scanning in place
-    const int scanDelay = 1100;
+    const int scanDelay = 900;
     
 
     // phi velocity control system
@@ -587,7 +597,7 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
     double circleRadiusMeters = 0.3048;  // 1 ft
-    double angularSpeed = radians(45);
+    double angularSpeed = radians(38); // was 45
 
      // tunings
     phiVelCtrl->SetTunings(3, 10, 0);
@@ -613,7 +623,7 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     
     // start the robot
     // while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
-    while (!stopCondition && abs(phiPosAct) < pi/2) {
+    while (!stopCondition && abs(phiPosAct) < 2.35619449) {
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
@@ -661,17 +671,43 @@ void Robot::findClosestMarker(volatile bool& markerSeen, volatile double& distan
             smallestDistance = distanceToMarker;
         }
     }
+    Serial << "Smallest Distance: " << smallestDistance << endl;
 
     for (int i = 0; i < numIterations; i++) {
         turnInPlaceDeg(iterationAngle);
         markerSeen = false;
         delay(scanDelay);
         if (markerSeen && abs(distanceToMarker - smallestDistance) < distanceDelata_M) {
+            Serial << "Smallest Distance Found " << distanceToMarker << " " << angleToMarker << endl;
             turnInPlaceDeg(angleToMarker);
             goForwardM(distanceToMarker - 0.2032); // stop 8 inches away from marker
             break;
         }
     }
+
+}
+
+void Robot::findMarker4ft(volatile bool& markerSeen, volatile double& distanceToMarker, volatile double& angleToMarker) {
+
+    // setup
+    const int iterationAngle = 30;
+    const int numIterations = 360 / iterationAngle;
+    double distanceDelata_M = 0.1;
+    double distanceToFirstMarker_M = 1.2192; // first marker should be 4 ft away
+
+    for (int i = 0; i < numIterations; i++) {
+        turnInPlaceDeg(iterationAngle);
+        markerSeen = false;
+        delay(scanDelay);
+        if (markerSeen && abs(distanceToMarker - distanceToFirstMarker_M) < distanceDelata_M) {
+            turnInPlaceDeg(angleToMarker);
+            goForwardM(distanceToMarker - 0.2032); // stop 8 inches away from marker
+            break;
+        }
+    }
+
+    // if the 4 ft marker is not found after 1 rotation, find and go to closest marker
+    findClosestMarker(markerSeen, distanceToMarker, angleToMarker);
 
 }
 
