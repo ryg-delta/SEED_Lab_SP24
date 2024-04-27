@@ -600,7 +600,7 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     double angularSpeed = radians(38); // was 45
 
      // tunings
-    phiVelCtrl->SetTunings(3, 10, 0);
+    phiVelCtrl->SetTunings(2.5, 10, 0); // was 3, 10, 0
     rhoVelCtrl->SetTunings(35, 15, 0);
 
     double deltaPhiPos = DEG_TO_RAD*10;   
@@ -677,7 +677,7 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     
 
     // stop robot and wait for stable distance targets
-    delay(300);
+    delay(scanDelay);
     stopCondition = false;
     while (!stopCondition);
 }
