@@ -35,14 +35,13 @@ void recieveTargetISR(int howMany) {
     uint8_t distanceCM = Wire.read();
     
     // convert to usable values for robot
-    angleToMarker = FOV/2 - FOV*angleConverted/255 - 3;
+    angleToMarker = FOV/2 - FOV*angleConverted/255 - 8;
     distanceToMarker = distanceCM / 100.0;
 
     // the marker has been spotted
     if (distanceToMarker > 0.254 && distanceToMarker < 3) {
         markerFound = true;
     }
-    //}
 }
 
 
@@ -58,7 +57,7 @@ void setup() {
     }
     Wire.onReceive(recieveTargetISR);
 
-    comfortableDistanceFromMarker = 0.2032;
+    comfortableDistanceFromMarker = 0.36576; // 1.2 ft
 
 
     // main routine
