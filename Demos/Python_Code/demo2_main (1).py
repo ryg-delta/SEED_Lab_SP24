@@ -1,5 +1,5 @@
-# Demo 2
-# Polina Rygina
+# Final Demo
+# Polina Rygina and Silje Ostrem
 # SEED Lab Spring 2024
 # How to Run: Execute using the python terminal.
 # Make sure either camera is connected for live feed. Camera coefficients need to be in the same
@@ -16,7 +16,7 @@ from time import sleep
 import board
 import threading
 import time
-#from smbus2 import SMBus
+from smbus2 import SMBus
 
 
 HEIGHT = 480
@@ -26,7 +26,7 @@ X_ORIGIN = WIDTH // 2
 Y_ORIGIN = HEIGHT // 2
 
 #ENSURE THIS IS ACCURATE
-markerSize = 3.8 * 37.7952755906 # cm * factor
+markerSize = 5.0 * 37.7952755906 # cm * factor
 
 ARD_ADDR = 0x08
 HFOV = 60  # deg
@@ -37,6 +37,8 @@ detectedMarkers = False
 
 detectedHeight = 0
 detectedWidth = 0
+
+detectedCenter = np.zeros(6)
 
 actualWidth = 0
 actualHeight = 0
@@ -70,14 +72,14 @@ def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
 
 
 def initializeCamera():
-    camera = cv.VideoCapture(1)
+    camera = cv.VideoCapture(0)
     camera.set(cv.CAP_PROP_FRAME_WIDTH, WIDTH)
     camera.set(cv.CAP_PROP_FRAME_HEIGHT, HEIGHT)
     camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)
     camera.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     camera.set(cv.CAP_PROP_BRIGHTNESS, 250)
-    camera.set(cv.CAP_PROP_EXPOSURE, 39)
-    camera.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    camera.set(cv.CAP_PROP_EXPOSURE, 39) #39 for bb305
+    camera.set(cv.CAP_PROP_BUFFERSIZE, 1) 
     camera.set(cv.CAP_PROP_FPS, 120)
     return camera
 
@@ -92,30 +94,43 @@ def arucoDetect(img):
 
     detector = aruco.ArucoDetector(aruco_dict, parameters)
     corners, ids, rejected = detector.detectMarkers(img)
+    cornerCoors = np.zeros(6)
+    detectedCenter = np.zeros(6)
 
     if ids is not None:
         detectedMarkers = True
         # Assigns Corner Coordinates
-        cornerCoors = [[corners[0][0][0][0], corners[0][0][0][1]],
-                       [corners[0][0][1][0], corners[0][0][1][1]],
-                       [corners[0][0][2][0], corners[0][0][2][1]],
-                       [corners[0][0][3][0], corners[0][0][3][1]]]
-        detectedCenter = [cornerCoors[0][0] + (cornerCoors[1][0] - cornerCoors[0][0]) / 2,
-                          cornerCoors[3][1] + (cornerCoors[0][1] - cornerCoors[3][1])]
+        k = 0
+        for i in ids:
+            cornerCoors = [[corners[k][0][0][0], corners[k][0][0][1]],
+                       [corners[k][0][1][0], corners[k][0][1][1]],
+                       [corners[k][0][2][0], corners[k][0][2][1]],
+                       [corners[k][0][3][0], corners[k][0][3][1]]]
+            detectedCenter[k] = cornerCoors[0][0] + (cornerCoors[1][0] - cornerCoors[0][0]) / 2
+            k+=1
+        print(detectedCenter, "Center")
+
+        
     else:
         detectedMarkers = False
         lcdMsg = "No markers\ndetected."
+    #print(detectedCenter)
 
     return detectedMarkers, ids, corners
 
 
-def angle_detect():
+def angle_detect(ids):
+    angleVec = np.zeros(6)
+    k = 0
+    for i in ids:
+        
     # use similar triangles
-    distanceFromCenter = detectedCenter[0] - X_ORIGIN
-    # Convert from pixels to mm
-    angle = HFOV * (distanceFromCenter / (WIDTH))
+        distanceFromCenter = detectedCenter[k]- X_ORIGIN
+        # Convert from pixels to mm
+        angleVec[k] = HFOV * (distanceFromCenter / (WIDTH))
+        k+=1
     #print("distance from center: ", distanceFromCenter)
-    return angle
+    return angleVec
 
 def pixToMeter(pix):
     meters = pix * 0.0002645833
@@ -127,7 +142,7 @@ def find_closest(distance):
     closest = np.min(realDist)
     print(realDist, "realDist")
     closest_idx = np.where(distance==closest)
-    return closest
+    return closest, closest_idx[0]
 
 def write_data(angle, distance):
     if detectedMarkers:
@@ -135,7 +150,7 @@ def write_data(angle, distance):
         angle_sent = int(angle_sent)
         distance = int(np.round(distance))
         try:
-            #ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
+            ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
             print("angle: ", angle_sent)
             print("dist: ", distance)
         except OSError:
@@ -143,7 +158,7 @@ def write_data(angle, distance):
 
 if __name__ == "__main__":
     
-    #ARD_i2c = SMBus(1)
+    ARD_i2c = SMBus(1)
     sleep(1)
 
     vidCap = initializeCamera()
@@ -151,7 +166,7 @@ if __name__ == "__main__":
 
     # The first frame
     ret, frame = vidCap.read()
-
+    print(ret)
     # Show the first frame - ends when '0' is pushed
     cv.imshow('basicImg', frame)
     cv.waitKey(0)
@@ -175,6 +190,7 @@ if __name__ == "__main__":
             rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
             prevState = detectedMarkers
             distance = np.zeros(6)
+            angleVec = np.zeros(6)
             # If aruco detected, find the corners
             if detectedMarkers == True:
                 if prevState != True:
@@ -188,11 +204,14 @@ if __name__ == "__main__":
                     calcDistance = np.round(pixToMeter(dist),decimals=2) * 95
 
                     distance[i] = calcDistance
-                    angle = -angle_detect() + 3.15
+                angleVec = -angle_detect(ids) + 0.0 #og 3.15
 
-                sendDistance = find_closest(distance)
-                write_data(angle, sendDistance)
+                sendDistance,ang_idx, = find_closest(distance)
+                print(ang_idx[0])
+                write_data(angleVec[ang_idx[0]], sendDistance)
                 print(distance)
+                print(angleVec[ang_idx[0]])
+                print(angleVec, "angleVec")
 
             cv.imshow("Live Video", img)
 
