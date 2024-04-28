@@ -51,6 +51,7 @@ class Robot {
 
     /**
      * @brief Turn slowly until stopCondition is met (becomes true)
+     * FIXME: This function has not yet been shown to work correctly
      * 
      * @param stopCondition 
      */
@@ -58,6 +59,7 @@ class Robot {
 
     /**
      * @brief Drive in a circle to scan
+     * 
      * 
      * @param stopCondition 
      */
@@ -97,6 +99,7 @@ class Robot {
 
     /**
      * @brief On marker lock, this method will go a marker in view
+     * FIXME: This function has not yet been shown to work correctly
      * 
      * @param distanceM Distance to marker. This value can be constantly updated via ISR
      * @param angleDeg Angle to makrer. This value can be constantly updated via ISR

@@ -1,11 +1,8 @@
 # Demo Overview
 
 ## Localization and Control
-- Goal: Move robot a set amount of feed and rotate robot by a specified amount of degrees.
-- Structure: We use control systems to control the angular and radial position of the robot. Both the angular and radial components have position and velocity control systems. These four controllers working in parallel give the robot reasonable responses to angular and radial setpoints.
-- Metrics:
-  - Average angular dispacement error < 1 deg
-  - Average radial displacement error < 1 in
+- Goal: Build a framework by which our differential drive robot can sense and navigate its environment.
+- Structure: Our main class Robot contains individual packets of functionality that simplify complex tasks into simple commands. Every time a novel function is required, a method is devised and written within that class. This provides easy access to all previously used functionality while simplifying complex tasks by breaking them down into lower units of functionality.
 
 ## Computer Vision and Communication
 - Goal: Use ArUco Detection to determine the angle of the marker with respect to the camera
