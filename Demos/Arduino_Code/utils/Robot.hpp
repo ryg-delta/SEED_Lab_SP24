@@ -152,7 +152,7 @@ class Robot {
     int controllerSampleTimeMs = 10;
 
     // delay between rotations when scanning in place
-    const int scanDelay = 900;
+    const int scanDelay = 1100;
     
 
     // phi velocity control system
@@ -599,11 +599,11 @@ void Robot::driveInCircleF(double circleRadiusFeet, double forwardSpeed) {
 }
 
 void Robot::scanInCircle(volatile bool& stopCondition) {
-    double circleRadiusMeters = 0.3048;  // 1 ft
+    double circleRadiusMeters = 0.36576;  // 1.2 ft
     double angularSpeed = radians(38); // was 45
 
      // tunings
-    phiVelCtrl->SetTunings(3, 10, 0);
+    phiVelCtrl->SetTunings(2.5, 10, 0); // was 3, 10, 0
     rhoVelCtrl->SetTunings(35, 15, 0);
 
     double deltaPhiPos = DEG_TO_RAD*10;   
@@ -626,7 +626,7 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
     
     // start the robot
     // while (abs(phiPosAct) < 2*pi + deltaPhiPos) {
-    while (!stopCondition && abs(phiPosAct) < 2.35619449) {
+    while (!stopCondition && abs(phiPosAct) < 2.35619449) {  // 135 deg
         // update values
         tracker->update();
         rhoVelAct = tracker->getRhoSpeedMpS();
@@ -643,6 +643,33 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
     }
     
+    // if (!stopCondition) {
+    //     stop();
+    //     delay(100);
+    //     // init
+    //     phiVelDes = -angularSpeed;
+    //     phiVelAct = tracker->getPhiSpeedRpS();
+    //     phiPosAct = tracker->getPhiPosRad();
+    //     rhoVelDes = -angularSpeed * circleRadiusMeters;
+    //     rhoVelAct = tracker->getRhoSpeedMpS();
+    //     rhoPosAct = tracker->getRhoPosM();
+    //     while (!stopCondition && abs(phiPosAct) > 0.785398) {  // 45 deg
+    //         // update values
+    //         tracker->update();
+    //         rhoVelAct = tracker->getRhoSpeedMpS();
+    //         rhoPosAct = tracker->getRhoPosM();
+    //         phiVelAct = tracker->getPhiSpeedRpS();
+    //         phiPosAct = tracker->getPhiPosRad();
+    //         // compute controller outputs
+    //         rhoVelCtrl->Compute();
+    //         phiVelCtrl->Compute();
+    //         // update voltages
+    //         voltages.setVoltages(Vforward, Vrot);
+    //         // drive motors
+    //         motorDriver->setM1Speed(-volts2speed(voltages.getVright()));
+    //         motorDriver->setM2Speed(-volts2speed(voltages.getVleft()));
+    //     }
+    // }
      // turn off control systems
     rhoVelCtrl->SetMode(0);
     phiVelCtrl->SetMode(0);
@@ -650,9 +677,10 @@ void Robot::scanInCircle(volatile bool& stopCondition) {
      // stop the robot where it is
     tracker->zero();
     stop();
+    
 
     // stop robot and wait for stable distance targets
-    delay(300);
+    delay(scanDelay);
     stopCondition = false;
     while (!stopCondition);
 }
@@ -701,11 +729,14 @@ void Robot::findMarker4ft(volatile bool& markerSeen, volatile double& distanceTo
     for (int i = 0; i < numIterations; i++) {
         turnInPlaceDeg(iterationAngle);
         markerSeen = false;
-        delay(scanDelay);
-        if (markerSeen && abs(distanceToMarker - distanceToFirstMarker_M) < distanceDelata_M) {
-            turnInPlaceDeg(angleToMarker);
+        delay(scanDelay+200);
+        double angleToCurrentMarker = angleToMarker;
+        double distanceToCurrentMarker = distanceToMarker;
+        if (markerSeen && abs(distanceToCurrentMarker - distanceToFirstMarker_M) < distanceDelata_M) {
+            
+            turnInPlaceDeg(angleToCurrentMarker);
             goForwardM(distanceToMarker - 0.2032); // stop 8 inches away from marker
-            break;
+            return;
         }
     }
 

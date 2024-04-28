@@ -133,8 +133,8 @@ def write_data(angle, distance):
         distance = int(np.round(distance))
         try:
             ARD_i2c.write_byte_data(ARD_ADDR, angle_sent, distance)
-            print(angle_sent)
-            print(distance)
+            print("angle:",angle_sent)
+            print("cm:", distance)
         except OSError:
             print("Unable to write.")
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
             detectedMarkers, ids, corners = arucoDetect(img)
             rvec, tvec, markerPts = my_estimatePoseSingleMarkers(corners, markerSize, camMtx, distCoeffs)
             prevState = detectedMarkers
-            distance = np.empty(6)
+            #distance = np.empty(6)
             # If aruco detected, find the corners
             if detectedMarkers == True:
                 if prevState != True:
@@ -182,16 +182,14 @@ if __name__ == "__main__":
                     tvec = np.array(tvec)
 
                     dist = np.sqrt(tvec[i][2] ** 2 + tvec[i][0] ** 2 + tvec[i][1] ** 2)
-                    calcDistance = np.round(pixToMeter(dist),decimals=2) * 95
-                    distance[i] = calcDistance
+                    distance = np.round(pixToMeter(dist),decimals=2) * 95
+                    #distance[i] = calcDistance
                     angle = -angle_detect() + 3.15
 
-                sendDistance = find_closest(distance)
-                write_data(angle, sendDistance)
+                #sendDistance = find_closest(distance)
+                write_data(angle, distance)
 
             #cv.imshow("Live Video", img)
-
- 
             
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
