@@ -3,13 +3,14 @@
 - We have three categories of suplemental files:
   - Calibration Utility files: Two folders are dedicated to storing the images used to calibrate each camera as well as their respective camera matrix and distortion coefficient npy files. 
   - Function prototypes/individual work: Since labor was split up, each file contains separate functions.
-  - Main: Angle_Detect_and_Disp_Video_main.py
+  - Main: final_main.py, demo2_main.py
 
 ## Supplementary File Descriptions
 - Angle_Detect_and_Disp_Video_main.py: Runs angle detection algorithm in real time, displaying result to LCD screen.
 - calibrate_camera.py: Script that generates camera matrix and distortion coefficient npy files. [REQUIRES opencv_contrib LIBRARY!]
 - pose_estimation.py: Shows the pose of each marker, currently configured to work with images instead of video.
 - generate_aruco.py: Generates charuco board for camera calibration.
+- camOptimization.py: 
 
 
 ## Main File
