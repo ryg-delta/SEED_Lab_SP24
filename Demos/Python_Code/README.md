@@ -10,16 +10,11 @@
 - calibrate_camera.py: Script that generates camera matrix and distortion coefficient npy files. [REQUIRES opencv_contrib LIBRARY!]
 - pose_estimation.py: Shows the pose of each marker, currently configured to work with images instead of video.
 - generate_aruco.py: Generates charuco board for camera calibration.
-- camOptimization.py: 
-
+- camOptimization.py: Test file to improve camera latency
+- generate_aruco.py: Generate charuco board for calibrate_camera.py
+- Write_I2C_Bits.py: Functions for sending data to the Arduino with as minimal bytes as possible
 
 ## Main File
-- Our main file uses functions to accomplish the goals required by the project
-- First, we initalize both the LCD screen and the camera
-- Then, we take a first frame to check to make sure the camera is working, which is exited by presing "0"
-- Next, we enter a while loop, which takes in live video from the camera
-- Then we process the image (grayscale + adding center line)
-- We call a function to detect aruco markers
-- If an aruco marker is detected, calculate the angle between center of the marker and camera
-- The angle is then sent to the LCD screen. Negative angle means it is pointed to the right, positive angle means it is pointed to the left.
-- Program exits when you click the window and press 'q'
+- Runs aruco detection and pose estimation to get the distance and angle of any markers in view
+- Sends distance and angle to Arduino to determine location of markers.
+- Camera Optimizations implemented to prevent over exposure
